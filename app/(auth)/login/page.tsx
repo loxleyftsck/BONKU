@@ -44,12 +44,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-white to-purple-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            BONKU
-          </h1>
+          <div className="text-center mb-8">
+            <div className="inline-block p-3 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg mb-4">
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent">
+                BONKU
+              </h1>
+            </div>
+          </div>
           <CardTitle>Welcome Back!</CardTitle>
           <CardDescription>
             Login to your financial mentor dashboard

@@ -58,9 +58,9 @@ export function Sidebar() {
                 <div className="flex flex-col h-full">
                     {/* Logo */}
                     <div className="p-6 border-b">
-                        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        <span className="text-xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                             BONKU
-                        </h1>
+                        </span>
                         <p className="text-xs text-muted-foreground mt-1">
                             AI Financial Mentor
                         </p>
@@ -95,7 +95,7 @@ export function Sidebar() {
                     {/* User info */}
                     <div className="p-4 border-t">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                            <div className="p-3 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold">
                                 U
                             </div>
                             <div className="flex-1 min-w-0">

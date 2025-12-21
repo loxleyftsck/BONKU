@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     
     // Calculate totals
     const totals = (monthTransactions || []).reduce(
-      (acc, t) => {
+      (acc: { income: number; expenses: number }, t: any) => {
         if (t.type === "income") {
           acc.income += t.amount;
         } else {
@@ -53,8 +53,8 @@ export async function GET(request: Request) {
     
     // Calculate category breakdown
     const categoryBreakdown = (monthTransactions || [])
-      .filter((t) => t.type === "expense")
-      .reduce((acc, t) => {
+      .filter((t: any) => t.type === "expense")
+      .reduce((acc: Record<string, { amount: number; count: number }>, t: any) => {
         if (!acc[t.category]) {
           acc[t.category] = { amount: 0, count: 0 };
         }

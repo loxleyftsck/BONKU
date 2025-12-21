@@ -31,7 +31,7 @@ export const transactionSchema = z.object({
       return inputDate <= today;
     }, "Tanggal tidak boleh di masa depan"),
   behavior_tag: z.enum(["planned", "impulsive", "essential"]).optional(),
-  is_recurring: z.boolean().optional().default(false),
+  is_recurring: z.boolean(),
 });
 
 export type TransactionFormData = z.infer<typeof transactionSchema>;
