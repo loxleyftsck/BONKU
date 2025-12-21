@@ -310,10 +310,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 👨‍💻 Author
 
-**Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
-- Portfolio: [yourwebsite.com](https://yourwebsite.com)
+**loxleyftsck**
+- GitHub: [@loxleyftsck](https://github.com/loxleyftsck)
+- Repository: [BONKU](https://github.com/loxleyftsck/BONKU)
 
 ---
 
