@@ -1,0 +1,16 @@
+{
+    "recommendations": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "csstools.postcss",
+        "ms-vscode.vscode-typescript-next",
+        "formulahendry.auto-rename-tag",
+        "dsznajder.es7-react-js-snippets",
+        "christian-kohler.path-intellisense",
+        "WallabyJs.console-ninja",
+        "usernamehw.errorlens",
+        "YoavBls.pretty-ts-errors",
+        "antfu.browse-lite"
+    ]
+}
