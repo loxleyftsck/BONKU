@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { addMonths, format, parseISO } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
+import { currentMonth, isValidMonth, monthRange } from "@/lib/utils/date";
 
 // GET /api/dashboard/summary - Get monthly financial summary
 export async function GET(request: Request) {
@@ -20,23 +20,17 @@ export async function GET(request: Request) {
     }
     
     // If no month specified, use current month
-    const targetMonth = month || new Date().toISOString().slice(0, 7);
+    const targetMonth = month || currentMonth();
 
-    if (!/^\d{4}-\d{2}$/.test(targetMonth)) {
+    if (!isValidMonth(targetMonth)) {
       return NextResponse.json(
         { error: "Invalid month. Expected YYYY-MM." },
         { status: 400 }
       );
     }
     
-    // Use an exclusive upper bound of the first of the next month. The previous
-    // `${targetMonth}-31` produced invalid literals like "2026-02-31", which
-    // Postgres rejects — the summary 500'd every month shorter than 31 days.
-    const monthStart = `${targetMonth}-01`;
-    const nextMonthStart = format(
-      addMonths(parseISO(monthStart), 1),
-      "yyyy-MM-dd"
-    );
+    const { start: monthStart, endExclusive: nextMonthStart } =
+      monthRange(targetMonth);
 
     // Fetch transactions for the target month
     const { data: monthTransactions, error } = await supabase
