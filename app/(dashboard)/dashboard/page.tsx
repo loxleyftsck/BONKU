@@ -17,13 +17,14 @@ import { useTransactions } from "@/hooks/useTransactions";
 import { useAIInsights } from "@/hooks/useAI";
 import { useEducationModules } from "@/hooks/useEducation";
 import { formatCurrency } from "@/lib/utils/currency";
+import { ErrorState } from "@/components/shared/ErrorState";
 
 export default function DashboardPage() {
     // Fetch data from APIs
-    const { data: summary, isLoading: summaryLoading } = useDashboardSummary();
-    const { data: transactions, isLoading: transactionsLoading } = useTransactions();
-    const { data: insights, isLoading: insightsLoading } = useAIInsights(undefined, true);
-    const { data: modules, isLoading: modulesLoading } = useEducationModules();
+    const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = useDashboardSummary();
+    const { data: transactions, isLoading: transactionsLoading, isError: transactionsError, refetch: refetchTransactions } = useTransactions();
+    const { data: insights, isLoading: insightsLoading, isError: insightsError, refetch: refetchInsights } = useAIInsights(undefined, true);
+    const { data: modules, isLoading: modulesLoading, isError: modulesError, refetch: refetchModules } = useEducationModules();
 
     // Get first 5 transactions
     const recentTransactions = transactions?.slice(0, 5) || [];
@@ -46,6 +47,10 @@ export default function DashboardPage() {
                 {summaryLoading ? (
                     <div className="col-span-4 text-center py-8 text-muted-foreground">
                         Loading...
+                    </div>
+                ) : summaryError ? (
+                    <div className="col-span-4">
+                        <ErrorState subject="ringkasan keuangan" onRetry={() => refetchSummary()} />
                     </div>
                 ) : summary ? (
                     <>
@@ -100,6 +105,8 @@ export default function DashboardPage() {
 
                 {insightsLoading ? (
                     <div className="text-center py-8 text-muted-foreground">Loading insights...</div>
+                ) : insightsError ? (
+                    <ErrorState subject="insights" onRetry={() => refetchInsights()} />
                 ) : insights && insights.length > 0 ? (
                     <div className="space-y-4">
                         {insights.slice(0, 2).map((insight) => (
@@ -125,6 +132,8 @@ export default function DashboardPage() {
 
                     {transactionsLoading ? (
                         <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                    ) : transactionsError ? (
+                        <ErrorState subject="transaksi" onRetry={() => refetchTransactions()} />
                     ) : recentTransactions.length > 0 ? (
                         <div className="space-y-3">
                             {recentTransactions.map((transaction) => (
@@ -149,6 +158,8 @@ export default function DashboardPage() {
 
                     {modulesLoading ? (
                         <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                    ) : modulesError ? (
+                        <ErrorState subject="modul edukasi" onRetry={() => refetchModules()} />
                     ) : firstModule ? (
                         <ModuleCard module={firstModule} />
                     ) : (

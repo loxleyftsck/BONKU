@@ -5,10 +5,11 @@ import { InsightCard } from "@/components/ai/InsightCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Lightbulb } from "lucide-react";
+import { ErrorState } from "@/components/shared/ErrorState";
 
 export default function InsightsPage() {
     const [typeFilter, setTypeFilter] = useState<string>("");
-    const { data: insights, isLoading } = useAIInsights(
+    const { data: insights, isLoading, isError, refetch } = useAIInsights(
         typeFilter as any || undefined,
         true
     );
@@ -79,6 +80,8 @@ export default function InsightsPage() {
                     <div className="text-center py-12 text-muted-foreground">
                         Loading insights...
                     </div>
+                ) : isError ? (
+                    <ErrorState subject="insights" onRetry={() => refetch()} />
                 ) : insights && insights.length > 0 ? (
                     <div className="space-y-4">
                         {insights.map((insight) => (

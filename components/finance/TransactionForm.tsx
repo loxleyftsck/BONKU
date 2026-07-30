@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { transactionSchema, type TransactionFormData } from "@/lib/utils/validators";
-import { useCreateTransaction } from "@/hooks/useTransactions";
+import { useCreateTransaction, useUpdateTransaction } from "@/hooks/useTransactions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,14 +17,24 @@ import { Badge } from "@/components/ui/badge";
 type TransactionFormProps = {
     onSuccess?: () => void;
     defaultValues?: Partial<TransactionFormData>;
+    /** When present the form edits this transaction instead of creating one. */
+    transactionId?: string;
 };
 
-export function TransactionForm({ onSuccess, defaultValues }: TransactionFormProps) {
+export function TransactionForm({
+    onSuccess,
+    defaultValues,
+    transactionId,
+}: TransactionFormProps) {
+    const isEditing = Boolean(transactionId);
+
     const [transactionType, setTransactionType] = useState<"income" | "expense">(
         defaultValues?.type || "expense"
     );
 
     const createTransaction = useCreateTransaction();
+    const updateTransaction = useUpdateTransaction();
+    const mutation = isEditing ? updateTransaction : createTransaction;
 
     const {
         register,
@@ -42,13 +52,23 @@ export function TransactionForm({ onSuccess, defaultValues }: TransactionFormPro
         },
     });
 
+    const [submitError, setSubmitError] = useState("");
+
     const onSubmit = async (data: TransactionFormData) => {
+        setSubmitError("");
         try {
-            await createTransaction.mutateAsync(data);
-            reset();
+            if (transactionId) {
+                await updateTransaction.mutateAsync({ id: transactionId, ...data });
+            } else {
+                await createTransaction.mutateAsync(data);
+                reset();
+            }
             onSuccess?.();
         } catch (error) {
-            console.error("Failed to create transaction:", error);
+            // Previously console.error only — the form appeared to hang.
+            setSubmitError(
+                error instanceof Error ? error.message : "Gagal menyimpan transaksi"
+            );
         }
     };
 
@@ -57,13 +77,26 @@ export function TransactionForm({ onSuccess, defaultValues }: TransactionFormPro
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Tambah Transaksi</CardTitle>
+                <CardTitle>
+                    {isEditing ? "Edit Transaksi" : "Tambah Transaksi"}
+                </CardTitle>
                 <CardDescription>
-                    Catat income atau pengeluaranmu untuk tracking yang lebih baik
+                    {isEditing
+                        ? "Perbaiki detail transaksi ini"
+                        : "Catat pemasukan atau pengeluaranmu untuk tracking yang lebih baik"}
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    {submitError && (
+                        <div
+                            role="alert"
+                            className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600"
+                        >
+                            {submitError}
+                        </div>
+                    )}
+
                     {/* Type Selector */}
                     <div className="space-y-2">
                         <Label>Tipe Transaksi</Label>
@@ -189,9 +222,13 @@ export function TransactionForm({ onSuccess, defaultValues }: TransactionFormPro
                     <Button
                         type="submit"
                         className="w-full"
-                        disabled={createTransaction.isPending}
+                        disabled={mutation.isPending}
                     >
-                        {createTransaction.isPending ? "Menyimpan..." : "Simpan Transaksi"}
+                        {mutation.isPending
+                            ? "Menyimpan..."
+                            : isEditing
+                              ? "Simpan Perubahan"
+                              : "Simpan Transaksi"}
                     </Button>
                 </form>
             </CardContent>

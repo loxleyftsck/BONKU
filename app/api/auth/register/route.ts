@@ -56,10 +56,15 @@ export async function POST(request: Request) {
 
     const supabase = await createClient();
 
-    // Create user account with Supabase Auth
+    // Create user account with Supabase Auth.
+    // `name` travels in user metadata so the on_auth_user_created trigger
+    // (migration 003) can write the profile row with it.
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: { name },
+      },
     });
 
     if (error) {
@@ -77,15 +82,27 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create profile record
-    const { error: profileError } = await supabase.from("profiles").insert({
-      id: data.user.id,
-      email: data.user.email!,
-      name,
-    });
+    // The profile row is created by the on_auth_user_created trigger
+    // (SECURITY DEFINER, migration 003). When signUp returned a session we can
+    // read it back under RLS and fail loudly rather than returning success for
+    // an account that would be unable to create transactions. With email
+    // confirmation enabled there is no session yet, so auth.uid() is null and
+    // RLS would hide the row — skip the check instead of reporting a false
+    // failure.
+    if (data.session) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", data.user.id)
+        .maybeSingle();
 
-    if (profileError) {
-      console.error("Error creating profile:", profileError);
+      if (profileError || !profile) {
+        console.error("Profile was not created for user", data.user.id, profileError);
+        return NextResponse.json(
+          { error: "Account setup incomplete. Please contact support." },
+          { status: 500 },
+        );
+      }
     }
 
     return NextResponse.json({

@@ -9,6 +9,7 @@ import { Select } from "@/components/ui/select";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/config/categories";
 import Link from "next/link";
 import { Plus, Filter } from "lucide-react";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { formatCurrency } from "@/lib/utils/currency";
 
 export default function FinancePage() {
@@ -19,7 +20,7 @@ export default function FinancePage() {
         dateTo: "",
     });
 
-    const { data: transactions, isLoading } = useTransactions(
+    const { data: transactions, isLoading, isError, refetch } = useTransactions(
         filters.type || filters.category || filters.dateFrom || filters.dateTo
             ? {
                 type: filters.type || undefined,
@@ -175,10 +176,16 @@ export default function FinancePage() {
                     <div className="text-center py-12 text-muted-foreground">
                         Loading transaksi...
                     </div>
+                ) : isError ? (
+                    <ErrorState subject="transaksi" onRetry={() => refetch()} />
                 ) : transactions && transactions.length > 0 ? (
                     <div className="space-y-3">
                         {transactions.map((transaction) => (
-                            <TransactionCard key={transaction.id} transaction={transaction} />
+                            <TransactionCard
+                                key={transaction.id}
+                                transaction={transaction}
+                                showActions
+                            />
                         ))}
                     </div>
                 ) : (

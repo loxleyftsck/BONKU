@@ -5,10 +5,11 @@ import { ModuleCard } from "@/components/education/ModuleCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { BookOpen } from "lucide-react";
+import { ErrorState } from "@/components/shared/ErrorState";
 
 export default function EducationPage() {
     const [category, setCategory] = useState<string>("");
-    const { data: modules, isLoading } = useEducationModules(category);
+    const { data: modules, isLoading, isError, refetch } = useEducationModules(category);
 
     const categories = [
         { value: "", label: "Semua" },
@@ -71,6 +72,8 @@ export default function EducationPage() {
                     <div className="text-center py-12 text-muted-foreground">
                         Loading modules...
                     </div>
+                ) : isError ? (
+                    <ErrorState subject="modul edukasi" onRetry={() => refetch()} />
                 ) : modules && modules.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {modules.map((module) => (

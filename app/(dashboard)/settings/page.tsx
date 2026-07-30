@@ -3,6 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Settings as SettingsIcon, User, Bell, Palette } from "lucide-react";
+import { LogoutButton } from "@/components/shared/LogoutButton";
 
 export default function SettingsPage() {
     return (
@@ -117,9 +118,7 @@ export default function SettingsPage() {
                             <Button variant="outline" className="w-full justify-start">
                                 Export Data
                             </Button>
-                            <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700">
-                                Logout
-                            </Button>
+                            <LogoutButton />
                         </div>
                     </CardContent>
                 </Card>

@@ -7,23 +7,40 @@ export async function GET(request: Request) {
   try {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
-    
+
+    // Authenticate. RLS also scopes these rows, but the API must not depend on
+    // a single database policy to keep one user's finances from another's.
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const dateFrom = searchParams.get("date_from");
     const dateTo = searchParams.get("date_to");
     const category = searchParams.get("category");
     const type = searchParams.get("type") as "income" | "expense" | null;
-    
+
     // Build query
     let query = supabase
       .from("transactions")
       .select("*")
+      .eq("user_id", user.id)
       .order("date", { ascending: false });
-    
-    // Apply filters
-    if (dateFrom && dateTo) {
-      query = query.gte("date", dateFrom).lte("date", dateTo);
+
+    // Apply each date bound independently — requiring both silently dropped
+    // the filter when only one end of the range was supplied.
+    if (dateFrom) {
+      query = query.gte("date", dateFrom);
     }
-    
+
+    if (dateTo) {
+      query = query.lte("date", dateTo);
+    }
+
     if (type) {
       query = query.eq("type", type);
     }

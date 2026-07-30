@@ -6,21 +6,30 @@ import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import { getCategoryById } from "@/config/categories";
 import { cn } from "@/lib/utils/cn";
+import { TransactionActions } from "@/components/finance/TransactionActions";
 
 type TransactionCardProps = {
     transaction: Transaction;
     onClick?: () => void;
+    /** Render edit/delete controls. Off by default for compact summary lists. */
+    showActions?: boolean;
 };
 
-export function TransactionCard({ transaction, onClick }: TransactionCardProps) {
+export function TransactionCard({
+    transaction,
+    onClick,
+    showActions = false,
+}: TransactionCardProps) {
     const category = getCategoryById(transaction.category, transaction.type);
     const Icon = category?.icon;
 
     return (
         <Card
+            // Only signal interactivity when the card is actually interactive —
+            // it previously rendered cursor-pointer with no handler attached.
             className={cn(
-                "cursor-pointer hover:bg-accent transition-colors",
-                onClick && "cursor-pointer"
+                "transition-colors",
+                onClick && "cursor-pointer hover:bg-accent"
             )}
             onClick={onClick}
         >
@@ -44,21 +53,24 @@ export function TransactionCard({ transaction, onClick }: TransactionCardProps) 
                         </CardDescription>
                     </div>
                 </div>
-                <div className="text-right">
-                    <div className={cn(
-                        "text-lg font-bold",
-                        transaction.type === "income" ? "text-green-600" : "text-red-600"
-                    )}>
-                        {transaction.type === "income" ? "+" : "-"}
-                        {formatCurrency(transaction.amount)}
+                <div className="flex items-start gap-2">
+                    <div className="text-right">
+                        <div className={cn(
+                            "text-lg font-bold",
+                            transaction.type === "income" ? "text-green-600" : "text-red-600"
+                        )}>
+                            {transaction.type === "income" ? "+" : "-"}
+                            {formatCurrency(transaction.amount)}
+                        </div>
+                        {transaction.behavior_tag && (
+                            <Badge variant="outline" className="mt-1 text-xs">
+                                {transaction.behavior_tag === "planned" && "📋 Terencana"}
+                                {transaction.behavior_tag === "impulsive" && "⚡ Impulsif"}
+                                {transaction.behavior_tag === "essential" && "⭐ Penting"}
+                            </Badge>
+                        )}
                     </div>
-                    {transaction.behavior_tag && (
-                        <Badge variant="outline" className="mt-1 text-xs">
-                            {transaction.behavior_tag === "planned" && "📋 Terencana"}
-                            {transaction.behavior_tag === "impulsive" && "⚡ Impulsif"}
-                            {transaction.behavior_tag === "essential" && "⭐ Penting"}
-                        </Badge>
-                    )}
+                    {showActions && <TransactionActions transaction={transaction} />}
                 </div>
             </CardHeader>
         </Card>
