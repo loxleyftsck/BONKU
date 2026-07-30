@@ -1,7 +1,7 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Transaction } from "@/types/models";
-import { formatCurrency } from "@/lib/utils/currency";
+import { Amount } from "@/components/shared/Amount";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import { getCategoryById } from "@/config/categories";
@@ -55,18 +55,21 @@ export function TransactionCard({
                 </div>
                 <div className="flex items-start gap-2">
                     <div className="text-right">
-                        <div className={cn(
-                            "text-lg font-bold",
-                            transaction.type === "income" ? "text-green-600" : "text-red-600"
-                        )}>
-                            {transaction.type === "income" ? "+" : "-"}
-                            {formatCurrency(transaction.amount)}
-                        </div>
+                        <Amount
+                            value={transaction.amount}
+                            sign={transaction.type === "income" ? "positive" : "negative"}
+                            className={cn(
+                                "block text-lg font-bold",
+                                transaction.type === "income"
+                                    ? "text-success"
+                                    : "text-destructive"
+                            )}
+                        />
                         {transaction.behavior_tag && (
                             <Badge variant="outline" className="mt-1 text-xs">
-                                {transaction.behavior_tag === "planned" && "📋 Terencana"}
-                                {transaction.behavior_tag === "impulsive" && "⚡ Impulsif"}
-                                {transaction.behavior_tag === "essential" && "⭐ Penting"}
+                                {transaction.behavior_tag === "planned" && "Terencana"}
+                                {transaction.behavior_tag === "impulsive" && "Impulsif"}
+                                {transaction.behavior_tag === "essential" && "Penting"}
                             </Badge>
                         )}
                     </div>

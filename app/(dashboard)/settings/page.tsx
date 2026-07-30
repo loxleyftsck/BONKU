@@ -1,14 +1,48 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings as SettingsIcon, User, Bell, Palette } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Settings as SettingsIcon, User, Bell, Palette, Shield } from "lucide-react";
+import Link from "next/link";
 import { LogoutButton } from "@/components/shared/LogoutButton";
+import { ErrorState } from "@/components/shared/ErrorState";
+import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
+import { useTheme, type Theme } from "@/components/providers/ThemeProvider";
 
 export default function SettingsPage() {
+    const { data: profile, isLoading, isError, refetch } = useProfile();
+    const updateProfile = useUpdateProfile();
+    const { theme, setTheme } = useTheme();
+
+    const [name, setName] = useState("");
+    const [status, setStatus] = useState("");
+
+    useEffect(() => {
+        if (profile?.name) setName(profile.name);
+    }, [profile?.name]);
+
+    const saveName = async () => {
+        setStatus("");
+        try {
+            await updateProfile.mutateAsync({ name });
+            setStatus("Nama tersimpan.");
+        } catch (err) {
+            setStatus(err instanceof Error ? err.message : "Gagal menyimpan.");
+        }
+    };
+
+    const toggleSetting = (
+        key: "notifications_enabled" | "hide_balances",
+        value: boolean
+    ) => {
+        updateProfile.mutate({ settings: { [key]: value } });
+    };
+
     return (
         <div className="space-y-6">
-            {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Pengaturan</h1>
                 <p className="text-muted-foreground mt-1">
@@ -16,113 +50,168 @@ export default function SettingsPage() {
                 </p>
             </div>
 
-            {/* Settings Cards */}
-            <div className="grid gap-4 md:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <User className="h-5 w-5" />
-                            <CardTitle>Profil</CardTitle>
-                        </div>
-                        <CardDescription>
-                            Update informasi profil dan akun
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Nama</p>
-                                <p className="font-medium">User</p>
+            {isLoading ? (
+                <p className="text-muted-foreground">Memuat pengaturan...</p>
+            ) : isError ? (
+                <ErrorState subject="pengaturan" onRetry={() => refetch()} />
+            ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                    {/* Profile */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <User className="h-5 w-5" aria-hidden="true" />
+                                <CardTitle>Profil</CardTitle>
                             </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">Email</p>
-                                <p className="font-medium">user@bonku.app</p>
+                            <CardDescription>Informasi akunmu</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="profile-name">Nama</Label>
+                                    <Input
+                                        id="profile-name"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="profile-email">Email</Label>
+                                    <Input
+                                        id="profile-email"
+                                        value={profile?.email ?? ""}
+                                        readOnly
+                                        disabled
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Email tidak bisa diubah dari sini.
+                                    </p>
+                                </div>
+                                <Button
+                                    className="w-full"
+                                    variant="outline"
+                                    onClick={saveName}
+                                    disabled={
+                                        updateProfile.isPending ||
+                                        name.trim().length < 2 ||
+                                        name === profile?.name
+                                    }
+                                >
+                                    {updateProfile.isPending ? "Menyimpan..." : "Simpan Nama"}
+                                </Button>
+                                {status && (
+                                    <p role="status" className="text-sm text-muted-foreground">
+                                        {status}
+                                    </p>
+                                )}
                             </div>
-                            <Button className="w-full" variant="outline">
-                                Edit Profil
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
 
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <Bell className="h-5 w-5" />
-                            <CardTitle>Notifikasi</CardTitle>
-                        </div>
-                        <CardDescription>
-                            Atur preferensi notifikasi
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm">AI Insights</span>
-                                <input type="checkbox" defaultChecked className="rounded" />
+                    {/* Privacy */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <Shield className="h-5 w-5" aria-hidden="true" />
+                                <CardTitle>Privasi</CardTitle>
                             </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm">Spending Alerts</span>
-                                <input type="checkbox" defaultChecked className="rounded" />
+                            <CardDescription>
+                                Kendalikan apa yang terlihat di layarmu
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between gap-4">
+                                    <Label htmlFor="hide-balances" className="font-normal">
+                                        Sembunyikan nominal
+                                        <span className="block text-xs text-muted-foreground">
+                                            Berguna saat memakai perangkat bersama
+                                        </span>
+                                    </Label>
+                                    <input
+                                        type="checkbox"
+                                        id="hide-balances"
+                                        className="rounded border-input"
+                                        checked={profile?.settings?.hide_balances ?? false}
+                                        onChange={(e) =>
+                                            toggleSetting("hide_balances", e.target.checked)
+                                        }
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between gap-4">
+                                    <Label htmlFor="notifications" className="font-normal">
+                                        Notifikasi
+                                    </Label>
+                                    <input
+                                        type="checkbox"
+                                        id="notifications"
+                                        className="rounded border-input"
+                                        checked={profile?.settings?.notifications_enabled ?? false}
+                                        onChange={(e) =>
+                                            toggleSetting("notifications_enabled", e.target.checked)
+                                        }
+                                    />
+                                </div>
                             </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm">Education Reminders</span>
-                                <input type="checkbox" className="rounded" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
 
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <Palette className="h-5 w-5" />
-                            <CardTitle>Tampilan</CardTitle>
-                        </div>
-                        <CardDescription>
-                            Customize appearance
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
-                            <div>
-                                <p className="text-sm text-muted-foreground mb-2">Theme</p>
-                                <select className="w-full rounded-md border border-input bg-background px-3 py-2">
-                                    <option>Light</option>
-                                    <option>Dark</option>
-                                    <option>System</option>
+                    {/* Appearance */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <Palette className="h-5 w-5" aria-hidden="true" />
+                                <CardTitle>Tampilan</CardTitle>
+                            </div>
+                            <CardDescription>Tema aplikasi</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                <Label htmlFor="theme">Tema</Label>
+                                <select
+                                    id="theme"
+                                    className="w-full rounded-md border border-input bg-background px-3 min-h-11"
+                                    value={theme}
+                                    onChange={(e) => setTheme(e.target.value as Theme)}
+                                >
+                                    <option value="light">Terang</option>
+                                    <option value="dark">Gelap</option>
+                                    <option value="system">Ikuti sistem</option>
                                 </select>
+                                <p className="text-xs text-muted-foreground">
+                                    Mata uang saat ini tetap Rupiah (IDR).
+                                </p>
                             </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground mb-2">Currency</p>
-                                <select className="w-full rounded-md border border-input bg-background px-3 py-2">
-                                    <option>IDR (Rp)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
 
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <SettingsIcon className="h-5 w-5" />
-                            <CardTitle>Lainnya</CardTitle>
-                        </div>
-                        <CardDescription>
-                            Additional settings
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-2">
-                            <Button variant="outline" className="w-full justify-start">
-                                Export Data
-                            </Button>
-                            <LogoutButton />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                    {/* Other */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <SettingsIcon className="h-5 w-5" aria-hidden="true" />
+                                <CardTitle>Lainnya</CardTitle>
+                            </div>
+                            <CardDescription>Akun dan dokumen</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                <Link href="/legal/privacy" className="block">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        Kebijakan Privasi
+                                    </Button>
+                                </Link>
+                                <Link href="/legal/terms" className="block">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        Syarat &amp; Ketentuan
+                                    </Button>
+                                </Link>
+                                <LogoutButton />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
         </div>
     );
 }

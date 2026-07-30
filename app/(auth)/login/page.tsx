@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Logo } from "@/components/shared/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,25 +45,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-white to-purple-50 p-4">
-      <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="text-center mb-8">
-            <div className="inline-block p-3 bg-linear-to-br from-blue-500 to-purple-500 rounded-lg mb-4">
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent">
-                BONKU
-              </h1>
-            </div>
-          </div>
-          <CardTitle>Welcome Back!</CardTitle>
+          <h1 className="mb-4">
+            <Logo className="text-3xl" />
+          </h1>
+          <CardTitle>Selamat datang kembali</CardTitle>
           <CardDescription>
-            Login to your financial mentor dashboard
+            Masuk untuk melanjutkan pencatatan keuanganmu
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+              <div
+                role="alert"
+                className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive"
+              >
                 {error}
               </div>
             )}
@@ -96,18 +95,17 @@ export default function LoginPage() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading ? "Memproses..." : "Masuk"}
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              Belum punya akun?{" "}
               <Link href="/register" className="text-primary hover:underline">
-                Register here
+                Daftar di sini
               </Link>
             </div>
           </form>
         </CardContent>
       </Card>
-    </div>
   );
 }

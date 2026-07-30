@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/config/categories";
 import Link from "next/link";
-import { Plus, Filter } from "lucide-react";
+import { Plus, Filter, TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { formatCurrency } from "@/lib/utils/currency";
+import { Amount } from "@/components/shared/Amount";
+import { HideBalancesToggle } from "@/components/shared/HideBalancesToggle";
+import { StatCard } from "@/components/dashboard/StatCard";
 
 export default function FinancePage() {
     const [filters, setFilters] = useState({
@@ -56,36 +58,48 @@ export default function FinancePage() {
                         Kelola dan tracking semua transaksi keuanganmu
                     </p>
                 </div>
-                <Link href="/finance/add">
-                    <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Tambah Transaksi
-                    </Button>
-                </Link>
+                <div className="flex items-center gap-2">
+                    <HideBalancesToggle />
+                    <Link href="/finance/add">
+                        <Button>
+                            <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
+                            Tambah Transaksi
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
-            {/* Summary Cards */}
+            {/* Summary Cards — these reflect the ACTIVE FILTER, not all time */}
             {totals && (
                 <div className="grid gap-4 md:grid-cols-3">
-                    <div className="p-4 border rounded-lg">
-                        <p className="text-sm text-muted-foreground">Total Pemasukan</p>
-                        <p className="text-2xl font-bold text-green-600">
-                            {formatCurrency(totals.income)}
-                        </p>
-                    </div>
-                    <div className="p-4 border rounded-lg">
-                        <p className="text-sm text-muted-foreground">Total Pengeluaran</p>
-                        <p className="text-2xl font-bold text-red-600">
-                            {formatCurrency(totals.expenses)}
-                        </p>
-                    </div>
-                    <div className="p-4 border rounded-lg">
-                        <p className="text-sm text-muted-foreground">Net</p>
-                        <p className={`text-2xl font-bold ${totals.income - totals.expenses >= 0 ? "text-green-600" : "text-red-600"
-                            }`}>
-                            {formatCurrency(totals.income - totals.expenses)}
-                        </p>
-                    </div>
+                    <StatCard
+                        title="Pemasukan (hasil filter)"
+                        icon={TrendingUp}
+                        value={
+                            <Amount value={totals.income} className="text-success" />
+                        }
+                    />
+                    <StatCard
+                        title="Pengeluaran (hasil filter)"
+                        icon={TrendingDown}
+                        value={
+                            <Amount value={totals.expenses} className="text-destructive" />
+                        }
+                    />
+                    <StatCard
+                        title="Selisih (hasil filter)"
+                        icon={Wallet}
+                        value={
+                            <Amount
+                                value={totals.income - totals.expenses}
+                                className={
+                                    totals.income - totals.expenses >= 0
+                                        ? "text-success"
+                                        : "text-destructive"
+                                }
+                            />
+                        }
+                    />
                 </div>
             )}
 
@@ -97,9 +111,10 @@ export default function FinancePage() {
                 </div>
                 <div className="grid gap-4 md:grid-cols-4">
                     <div className="space-y-2">
-                        <label className="text-sm">Tipe</label>
+                        <label className="text-sm" htmlFor="filter-type">Tipe</label>
                         <select
-                            className="w-full rounded-md border border-input bg-background px-3 py-2"
+                            id="filter-type"
+                            className="w-full rounded-md border border-input bg-background px-3 min-h-11"
                             value={filters.type}
                             onChange={(e) =>
                                 setFilters({ ...filters, type: e.target.value as any })
@@ -112,9 +127,10 @@ export default function FinancePage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm">Kategori</label>
+                        <label className="text-sm" htmlFor="filter-category">Kategori</label>
                         <select
-                            className="w-full rounded-md border border-input bg-background px-3 py-2"
+                            id="filter-category"
+                            className="w-full rounded-md border border-input bg-background px-3 min-h-11"
                             value={filters.category}
                             onChange={(e) =>
                                 setFilters({ ...filters, category: e.target.value })
@@ -130,8 +146,9 @@ export default function FinancePage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm">Dari Tanggal</label>
+                        <label className="text-sm" htmlFor="filter-date-from">Dari Tanggal</label>
                         <Input
+                            id="filter-date-from"
                             type="date"
                             value={filters.dateFrom}
                             onChange={(e) =>
@@ -141,8 +158,9 @@ export default function FinancePage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm">Sampai Tanggal</label>
+                        <label className="text-sm" htmlFor="filter-date-to">Sampai Tanggal</label>
                         <Input
+                            id="filter-date-to"
                             type="date"
                             value={filters.dateTo}
                             onChange={(e) =>

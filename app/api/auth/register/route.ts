@@ -1,41 +1,19 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { clientIp, rateLimit } from "@/lib/utils/rateLimit";
 import { registerSchema } from "@/lib/utils/validators";
 
-// Simple in-memory rate limiter (production should use Redis)
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
-
-function rateLimit(
-  identifier: string,
-  maxAttempts: number = 5,
-  windowMs: number = 60000,
-): boolean {
-  const now = Date.now();
-  const record = rateLimitStore.get(identifier);
-
-  if (!record || now > record.resetTime) {
-    rateLimitStore.set(identifier, { count: 1, resetTime: now + windowMs });
-    return true;
-  }
-
-  if (record.count >= maxAttempts) {
-    return false;
-  }
-
-  record.count++;
-  return true;
-}
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // ✅ FIX: Rate limiting (5 attempts per minute per email)
-    const identifier = body.email || "anonymous";
-    if (!rateLimit(identifier, 5, 60000)) {
+    const limit = rateLimit(`register:${clientIp(request)}`, 5, 60_000);
+
+    if (!limit.allowed) {
       return NextResponse.json(
-        { error: "Too many registration attempts. Please try again later." },
-        { status: 429 },
+        { error: "Terlalu banyak percobaan daftar. Coba lagi sebentar lagi." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } },
       );
     }
 

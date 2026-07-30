@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Logo } from "@/components/shared/Logo";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,46 +73,46 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-white to-purple-50 p-4">
-        <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
-            <div className="w-16 h-16 bg-linear-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-success rounded-full flex items-center justify-center mx-auto mb-4">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold mb-2">Registration Successful!</h2>
+            <h2 className="text-2xl font-bold mb-2">Akun berhasil dibuat</h2>
             <p className="text-muted-foreground mb-4">
-              Account created successfully. Redirecting to login...
+              Mengarahkan ke halaman masuk...
             </p>
           </CardContent>
         </Card>
-      </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-white to-purple-50 p-4">
-      <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-            <h3 className="text-3xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            BONKU
-          </h3>
-          <CardTitle>Create Account</CardTitle>
+          <h1 className="mb-4">
+            <Logo className="text-3xl" />
+          </h1>
+          <CardTitle>Buat akun</CardTitle>
           <CardDescription>
-            Start your financial journey with BONKU
+            Mulai catat pemasukan dan pengeluaranmu
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+              <div
+                role="alert"
+                className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive"
+              >
                 {error}
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Nama</Label>
               <Input
                 id="name"
                 type="text"
@@ -150,7 +152,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -161,23 +163,44 @@ export default function RegisterPage() {
               />
             </div>
 
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="terms"
+                className="mt-1 rounded border-input"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                required
+              />
+              <Label htmlFor="terms" className="font-normal leading-snug">
+                Saya setuju dengan{" "}
+                <Link href="/legal/terms" className="text-primary hover:underline">
+                  Syarat &amp; Ketentuan
+                </Link>{" "}
+                dan{" "}
+                <Link href="/legal/privacy" className="text-primary hover:underline">
+                  Kebijakan Privasi
+                </Link>
+                .
+              </Label>
+            </div>
+
             <Button
               type="submit"
               className="w-full"
-              disabled={loading}
+              disabled={loading || !acceptedTerms}
             >
-              {loading ? "Creating account..." : "Register"}
+              {loading ? "Membuat akun..." : "Daftar"}
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
+              Sudah punya akun?{" "}
               <Link href="/login" className="text-primary hover:underline">
-                Login here
+                Masuk di sini
               </Link>
             </div>
           </form>
         </CardContent>
       </Card>
-    </div>
   );
 }

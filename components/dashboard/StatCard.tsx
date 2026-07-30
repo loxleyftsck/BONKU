@@ -1,10 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { ReactNode } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 type StatCardProps = {
     title: string;
-    value: string | number;
+    /** ReactNode so callers can pass <Amount /> and honour hide-balances. */
+    value: ReactNode;
     description?: string;
     icon?: LucideIcon;
     trend?: {

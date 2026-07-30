@@ -16,7 +16,8 @@ import { useDashboardSummary } from "@/hooks/useDashboard";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAIInsights } from "@/hooks/useAI";
 import { useEducationModules } from "@/hooks/useEducation";
-import { formatCurrency } from "@/lib/utils/currency";
+import { Amount } from "@/components/shared/Amount";
+import { HideBalancesToggle } from "@/components/shared/HideBalancesToggle";
 import { ErrorState } from "@/components/shared/ErrorState";
 
 export default function DashboardPage() {
@@ -35,11 +36,14 @@ export default function DashboardPage() {
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                <p className="text-muted-foreground mt-1">
-                    Selamat datang kembali! Ini ringkasan keuanganmu bulan ini.
-                </p>
+            <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+                    <p className="text-muted-foreground mt-1">
+                        Selamat datang kembali! Ini ringkasan keuanganmu bulan ini.
+                    </p>
+                </div>
+                <HideBalancesToggle />
             </div>
 
             {/* Stats Grid */}
@@ -55,8 +59,8 @@ export default function DashboardPage() {
                 ) : summary ? (
                     <>
                         <StatCard
-                            title="Total Income"
-                            value={formatCurrency(summary.total_income)}
+                            title="Total Pemasukan"
+                            value={<Amount value={summary.total_income} />}
                             icon={TrendingUp}
                             description="Bulan ini"
                             trend={{
@@ -65,8 +69,8 @@ export default function DashboardPage() {
                             }}
                         />
                         <StatCard
-                            title="Total Expenses"
-                            value={formatCurrency(summary.total_expenses)}
+                            title="Total Pengeluaran"
+                            value={<Amount value={summary.total_expenses} />}
                             icon={TrendingDown}
                             description="Bulan ini"
                             trend={{
@@ -75,8 +79,8 @@ export default function DashboardPage() {
                             }}
                         />
                         <StatCard
-                            title="Net Savings"
-                            value={formatCurrency(summary.net_savings)}
+                            title="Sisa Bersih"
+                            value={<Amount value={summary.net_savings} />}
                             icon={PiggyBank}
                             description="Bulan ini"
                             trend={{
@@ -85,7 +89,7 @@ export default function DashboardPage() {
                             }}
                         />
                         <StatCard
-                            title="Savings Rate"
+                            title="Rasio Menabung"
                             value={`${summary.savings_rate.toFixed(1)}%`}
                             icon={Wallet}
                             description="Target: 30%"
@@ -97,7 +101,7 @@ export default function DashboardPage() {
             {/* AI Insights */}
             <div>
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold">💡 AI Insights</h2>
+                    <h2 className="text-2xl font-bold">Insights</h2>
                     <Link href="/insights">
                         <Button variant="outline" size="sm">Lihat Semua</Button>
                     </Link>
@@ -124,7 +128,7 @@ export default function DashboardPage() {
                 {/* Recent Transactions */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-2xl font-bold">📊 Transaksi Terbaru</h2>
+                        <h2 className="text-2xl font-bold">Transaksi Terbaru</h2>
                         <Link href="/finance">
                             <Button variant="outline" size="sm">Lihat Semua</Button>
                         </Link>
@@ -150,7 +154,7 @@ export default function DashboardPage() {
                 {/* Continue Learning */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-2xl font-bold">📚 Lanjutkan Belajar</h2>
+                        <h2 className="text-2xl font-bold">Lanjutkan Belajar</h2>
                         <Link href="/education">
                             <Button variant="outline" size="sm">Lihat Semua</Button>
                         </Link>
