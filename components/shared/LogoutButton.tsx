@@ -39,7 +39,7 @@ export function LogoutButton() {
         <div className="space-y-2">
             <Button
                 variant="outline"
-                className="w-full justify-start text-red-600 hover:text-red-700"
+                className="w-full justify-start text-destructive hover:text-destructive/80"
                 onClick={handleLogout}
                 disabled={loading}
             >
@@ -47,7 +47,7 @@ export function LogoutButton() {
                 {loading ? "Keluar..." : "Logout"}
             </Button>
             {error && (
-                <p role="alert" className="text-sm text-red-600">
+                <p role="alert" className="text-sm text-destructive">
                     {error}
                 </p>
             )}

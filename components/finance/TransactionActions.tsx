@@ -45,7 +45,7 @@ export function TransactionActions({ transaction }: { transaction: Transaction }
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 text-red-600 hover:text-red-700"
+                    className="h-9 w-9 text-destructive hover:text-destructive/80"
                     aria-label="Hapus transaksi"
                     onClick={() => setOpen(true)}
                 >
@@ -66,7 +66,7 @@ export function TransactionActions({ transaction }: { transaction: Transaction }
                     </DialogHeader>
 
                     {error && (
-                        <p role="alert" className="text-sm text-red-600">
+                        <p role="alert" className="text-sm text-destructive">
                             {error}
                         </p>
                     )}

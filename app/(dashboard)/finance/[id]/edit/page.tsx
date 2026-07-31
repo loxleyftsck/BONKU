@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TransactionForm } from "@/components/finance/TransactionForm";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { SkeletonList } from "@/components/ui/skeleton";
 import { useTransaction } from "@/hooks/useTransactions";
 
 export default function EditTransactionPage({
@@ -28,9 +29,7 @@ export default function EditTransactionPage({
             </Link>
 
             {isLoading ? (
-                <div className="text-center py-12 text-muted-foreground">
-                    Loading transaksi...
-                </div>
+                <SkeletonList count={1} className="[&>div]:h-96" />
             ) : isError ? (
                 <ErrorState subject="transaksi" onRetry={() => refetch()} />
             ) : transaction ? (

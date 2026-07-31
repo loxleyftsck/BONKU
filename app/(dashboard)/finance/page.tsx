@@ -9,6 +9,8 @@ import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/config/categories";
 import Link from "next/link";
 import { Plus, Filter, TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { NativeSelect } from "@/components/ui/native-select";
+import { SkeletonList } from "@/components/ui/skeleton";
 import { Amount } from "@/components/shared/Amount";
 import { HideBalancesToggle } from "@/components/shared/HideBalancesToggle";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -125,9 +127,8 @@ export default function FinancePage() {
                 <div className="grid gap-4 md:grid-cols-4">
                     <div className="space-y-2">
                         <label className="text-sm" htmlFor="filter-type">Tipe</label>
-                        <select
+                        <NativeSelect
                             id="filter-type"
-                            className="w-full rounded-md border border-input bg-background px-3 min-h-11"
                             value={filters.type}
                             onChange={(e) =>
                                 setFilters({
@@ -139,14 +140,13 @@ export default function FinancePage() {
                             <option value="">Semua</option>
                             <option value="income">Pemasukan</option>
                             <option value="expense">Pengeluaran</option>
-                        </select>
+                        </NativeSelect>
                     </div>
 
                     <div className="space-y-2">
                         <label className="text-sm" htmlFor="filter-category">Kategori</label>
-                        <select
+                        <NativeSelect
                             id="filter-category"
-                            className="w-full rounded-md border border-input bg-background px-3 min-h-11"
                             value={filters.category}
                             onChange={(e) =>
                                 setFilters({ ...filters, category: e.target.value })
@@ -158,7 +158,7 @@ export default function FinancePage() {
                                     {cat.label}
                                 </option>
                             ))}
-                        </select>
+                        </NativeSelect>
                     </div>
 
                     <div className="space-y-2">
@@ -207,9 +207,7 @@ export default function FinancePage() {
                 </h2>
 
                 {isLoading ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                        Loading transaksi...
-                    </div>
+                    <SkeletonList count={5} />
                 ) : isError ? (
                     <ErrorState subject="transaksi" onRetry={() => refetch()} />
                 ) : transactions && transactions.length > 0 ? (

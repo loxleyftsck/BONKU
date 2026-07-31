@@ -9,6 +9,8 @@ import { Settings as SettingsIcon, User, Palette, Shield } from "lucide-react";
 import Link from "next/link";
 import { LogoutButton } from "@/components/shared/LogoutButton";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { NativeSelect } from "@/components/ui/native-select";
+import { SkeletonList } from "@/components/ui/skeleton";
 import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
 import { useTheme, type Theme } from "@/components/providers/ThemeProvider";
 
@@ -52,7 +54,7 @@ export default function SettingsPage() {
             </div>
 
             {isLoading ? (
-                <p className="text-muted-foreground">Memuat pengaturan...</p>
+                <SkeletonList count={4} />
             ) : isError ? (
                 <ErrorState subject="pengaturan" onRetry={() => refetch()} />
             ) : (
@@ -169,16 +171,15 @@ export default function SettingsPage() {
                         <CardContent>
                             <div className="space-y-2">
                                 <Label htmlFor="theme">Tema</Label>
-                                <select
+                                <NativeSelect
                                     id="theme"
-                                    className="w-full rounded-md border border-input bg-background px-3 min-h-11"
                                     value={theme}
                                     onChange={(e) => setTheme(e.target.value as Theme)}
                                 >
                                     <option value="light">Terang</option>
                                     <option value="dark">Gelap</option>
                                     <option value="system">Ikuti sistem</option>
-                                </select>
+                                </NativeSelect>
                                 <p className="text-xs text-muted-foreground">
                                     Mata uang saat ini tetap Rupiah (IDR).
                                 </p>

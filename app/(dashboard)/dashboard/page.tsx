@@ -19,6 +19,7 @@ import { useEducationModules } from "@/hooks/useEducation";
 import { Amount } from "@/components/shared/Amount";
 import { HideBalancesToggle } from "@/components/shared/HideBalancesToggle";
 import { ErrorState } from "@/components/shared/ErrorState";
+import { SkeletonList, SkeletonStats } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
     // Fetch data from APIs
@@ -49,9 +50,7 @@ export default function DashboardPage() {
             {/* Stats Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {summaryLoading ? (
-                    <div className="col-span-4 text-center py-8 text-muted-foreground">
-                        Loading...
-                    </div>
+                    <SkeletonStats count={4} />
                 ) : summaryError ? (
                     <div className="col-span-4">
                         <ErrorState subject="ringkasan keuangan" onRetry={() => refetchSummary()} />
@@ -113,7 +112,7 @@ export default function DashboardPage() {
                 </div>
 
                 {insightsLoading ? (
-                    <div className="text-center py-8 text-muted-foreground">Loading insights...</div>
+                    <SkeletonList count={2} />
                 ) : insightsError ? (
                     <ErrorState subject="insights" onRetry={() => refetchInsights()} />
                 ) : insights && insights.length > 0 ? (
@@ -140,7 +139,7 @@ export default function DashboardPage() {
                     </div>
 
                     {transactionsLoading ? (
-                        <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                        <SkeletonList count={5} />
                     ) : transactionsError ? (
                         <ErrorState subject="transaksi" onRetry={() => refetchTransactions()} />
                     ) : recentTransactions.length > 0 ? (
@@ -166,7 +165,7 @@ export default function DashboardPage() {
                     </div>
 
                     {modulesLoading ? (
-                        <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                        <SkeletonList count={1} />
                     ) : modulesError ? (
                         <ErrorState subject="modul edukasi" onRetry={() => refetchModules()} />
                     ) : firstModule ? (

@@ -18,7 +18,7 @@ export default function GlobalError({
     return (
         <div className="min-h-screen flex items-center justify-center p-6">
             <div role="alert" className="max-w-md text-center space-y-4">
-                <AlertCircle className="h-12 w-12 mx-auto text-red-600" />
+                <AlertCircle className="h-12 w-12 mx-auto text-destructive" />
                 <h1 className="text-2xl font-bold">Terjadi kesalahan</h1>
                 <p className="text-muted-foreground">
                     Kami tidak bisa memuat halaman ini. Datamu aman — coba muat

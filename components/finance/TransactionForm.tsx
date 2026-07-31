@@ -8,11 +8,10 @@ import { useCreateTransaction, useUpdateTransaction } from "@/hooks/useTransacti
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from "@/config/categories";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 
 type TransactionFormProps = {
     onSuccess?: () => void;
@@ -91,7 +90,7 @@ export function TransactionForm({
                     {submitError && (
                         <div
                             role="alert"
-                            className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600"
+                            className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive"
                         >
                             {submitError}
                         </div>
@@ -119,7 +118,7 @@ export function TransactionForm({
                     {/* Amount */}
                     <div className="space-y-2">
                         <Label htmlFor="amount">
-                            Jumlah <span className="text-red-500">*</span>
+                            Jumlah <span className="text-destructive">*</span>
                         </Label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -134,18 +133,17 @@ export function TransactionForm({
                             />
                         </div>
                         {errors.amount && (
-                            <p className="text-sm text-red-500">{errors.amount.message}</p>
+                            <p className="text-sm text-destructive">{errors.amount.message}</p>
                         )}
                     </div>
 
                     {/* Category */}
                     <div className="space-y-2">
                         <Label htmlFor="category">
-                            Kategori <span className="text-red-500">*</span>
+                            Kategori <span className="text-destructive">*</span>
                         </Label>
-                        <select
+                        <NativeSelect
                             id="category"
-                            className="w-full rounded-md border border-input bg-background px-3 py-2"
                             {...register("category")}
                         >
                             <option value="">Pilih kategori...</option>
@@ -154,9 +152,9 @@ export function TransactionForm({
                                     {cat.label}
                                 </option>
                             ))}
-                        </select>
+                        </NativeSelect>
                         {errors.category && (
-                            <p className="text-sm text-red-500">{errors.category.message}</p>
+                            <p className="text-sm text-destructive">{errors.category.message}</p>
                         )}
                     </div>
 
@@ -173,7 +171,7 @@ export function TransactionForm({
                     {/* Date */}
                     <div className="space-y-2">
                         <Label htmlFor="date">
-                            Tanggal <span className="text-red-500">*</span>
+                            Tanggal <span className="text-destructive">*</span>
                         </Label>
                         <Input
                             id="date"
@@ -181,7 +179,7 @@ export function TransactionForm({
                             {...register("date")}
                         />
                         {errors.date && (
-                            <p className="text-sm text-red-500">{errors.date.message}</p>
+                            <p className="text-sm text-destructive">{errors.date.message}</p>
                         )}
                     </div>
 
@@ -189,16 +187,15 @@ export function TransactionForm({
                     {transactionType === "expense" && (
                         <div className="space-y-2">
                             <Label htmlFor="behavior_tag">Behavior Tag (opsional)</Label>
-                            <select
+                            <NativeSelect
                                 id="behavior_tag"
-                                className="w-full rounded-md border border-input bg-background px-3 py-2"
                                 {...register("behavior_tag")}
                             >
                                 <option value="">Tidak ada</option>
-                                <option value="planned">📋 Terencana</option>
-                                <option value="impulsive">⚡ Impulsif</option>
-                                <option value="essential">⭐ Penting</option>
-                            </select>
+                                <option value="planned">Terencana</option>
+                                <option value="impulsive">Impulsif</option>
+                                <option value="essential">Penting</option>
+                            </NativeSelect>
                             <p className="text-xs text-muted-foreground">
                                 Tag untuk analisis behavioral finance
                             </p>

@@ -17,7 +17,7 @@ export default function DashboardError({
 
     return (
         <div role="alert" className="border rounded-lg p-8 text-center space-y-4">
-            <AlertCircle className="h-10 w-10 mx-auto text-red-600" />
+            <AlertCircle className="h-10 w-10 mx-auto text-destructive" />
             <div>
                 <h2 className="text-xl font-bold">Gagal memuat halaman</h2>
                 <p className="text-muted-foreground mt-1">

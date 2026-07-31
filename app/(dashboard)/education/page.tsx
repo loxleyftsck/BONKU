@@ -4,10 +4,14 @@ import { useEducationModules } from "@/hooks/useEducation";
 import { ModuleCard } from "@/components/education/ModuleCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Clock } from "lucide-react";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { SkeletonList } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
 import { ErrorState } from "@/components/shared/ErrorState";
 
 export default function EducationPage() {
+    const router = useRouter();
     const [category, setCategory] = useState<string>("");
     const { data: modules, isLoading, isError, refetch } = useEducationModules(category);
 
@@ -29,28 +33,21 @@ export default function EducationPage() {
                 </p>
             </div>
 
-            {/* Stats */}
-            <div className="grid gap-4 md:grid-cols-3">
-                <div className="p-4 border rounded-lg">
-                    <div className="flex items-center gap-2">
-                        <BookOpen className="h-5 w-5 text-blue-600" />
-                        <p className="text-sm text-muted-foreground">Total Modul</p>
-                    </div>
-                    <p className="text-2xl font-bold mt-2">{modules?.length || 0}</p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">Estimasi Waktu Total</p>
-                    <p className="text-2xl font-bold mt-2">
-                        {modules?.reduce((sum, m) => sum + m.estimated_time, 0) || 0} menit
-                    </p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">Progress</p>
-                    <p className="text-2xl font-bold mt-2">0%</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                        0 dari {modules?.length || 0} selesai
-                    </p>
-                </div>
+            {/* Stats — only figures we can actually compute. A "Progress 0%"
+                tile used to sit here permanently hardcoded, because nothing
+                writes to user_progress yet. */}
+            <div className="grid gap-4 md:grid-cols-2">
+                <StatCard
+                    title="Total Modul"
+                    icon={BookOpen}
+                    value={modules?.length ?? 0}
+                />
+                <StatCard
+                    title="Estimasi Waktu"
+                    icon={Clock}
+                    value={`${modules?.reduce((sum, m) => sum + m.estimated_time, 0) ?? 0} menit`}
+                    description="Untuk menyelesaikan semua modul"
+                />
             </div>
 
             {/* Category Filter */}
@@ -69,9 +66,7 @@ export default function EducationPage() {
             {/* Modules List */}
             <div>
                 {isLoading ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                        Loading modules...
-                    </div>
+                    <SkeletonList count={6} />
                 ) : isError ? (
                     <ErrorState subject="modul edukasi" onRetry={() => refetch()} />
                 ) : modules && modules.length > 0 ? (
@@ -80,7 +75,7 @@ export default function EducationPage() {
                             <ModuleCard
                                 key={module.id}
                                 module={module}
-                                onClick={() => window.location.href = `/education/${module.slug}`}
+                                onClick={() => router.push(`/education/${module.slug}`)}
                             />
                         ))}
                     </div>

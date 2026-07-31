@@ -4,6 +4,8 @@ import { useEducationModule } from "@/hooks/useEducation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { educationCategory } from "@/config/education";
+import { cn } from "@/lib/utils/cn";
 import { ArrowLeft, Clock, Check } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
@@ -35,19 +37,9 @@ export default function ModuleDetailPage({
         );
     }
 
-    const categoryLabels = {
-        inflation: "Inflasi",
-        behavioral: "Behavioral Finance",
-        budgeting: "Budgeting",
-        investing: "Investasi",
-    };
 
-    const categoryColors = {
-        inflation: "bg-orange-500",
-        behavioral: "bg-purple-500",
-        budgeting: "bg-blue-500",
-        investing: "bg-green-500",
-    };
+
+    const category = educationCategory(module.category);
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
@@ -63,8 +55,8 @@ export default function ModuleDetailPage({
             <Card>
                 <CardHeader>
                     <div className="space-y-3">
-                        <Badge className={`${categoryColors[module.category]} text-white w-fit`}>
-                            {categoryLabels[module.category]}
+                        <Badge className={cn(category.className, "w-fit")}>
+                            {category.label}
                         </Badge>
                         <h1 className="text-3xl font-bold">{module.title}</h1>
                         {module.description && (

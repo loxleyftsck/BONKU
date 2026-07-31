@@ -14,7 +14,7 @@ type ErrorStateProps = {
 export function ErrorState({ subject, onRetry }: ErrorStateProps) {
     return (
         <div role="alert" className="border rounded-lg p-8 text-center">
-            <AlertCircle className="h-8 w-8 mx-auto text-red-600 mb-3" />
+            <AlertCircle className="h-8 w-8 mx-auto text-destructive mb-3" />
             <p className="font-medium">Gagal memuat {subject}</p>
             <p className="text-sm text-muted-foreground mt-1">
                 Datamu aman. Ini masalah koneksi atau server.

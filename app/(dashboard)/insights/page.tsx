@@ -4,7 +4,9 @@ import { useAIInsights } from "@/hooks/useAI";
 import { InsightCard } from "@/components/ai/InsightCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, AlertCircle, AlertTriangle, Info } from "lucide-react";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { SkeletonList } from "@/components/ui/skeleton";
 import type { AIInsight } from "@/types/models";
 import { ErrorState } from "@/components/shared/ErrorState";
 
@@ -14,6 +16,13 @@ export default function InsightsPage() {
         (typeFilter as AIInsight["type"]) || undefined,
         true
     );
+
+    const counts = {
+        total: insights?.length ?? 0,
+        critical: insights?.filter((i) => i.severity === "critical").length ?? 0,
+        warning: insights?.filter((i) => i.severity === "warning").length ?? 0,
+        info: insights?.filter((i) => i.severity === "info").length ?? 0,
+    };
 
     const types = [
         { value: "", label: "Semua" },
@@ -35,31 +44,24 @@ export default function InsightsPage() {
 
             {/* Stats */}
             <div className="grid gap-4 md:grid-cols-4">
-                <div className="p-4 border rounded-lg">
-                    <div className="flex items-center gap-2">
-                        <Lightbulb className="h-5 w-5 text-yellow-600" />
-                        <p className="text-sm text-muted-foreground">Total Insights</p>
-                    </div>
-                    <p className="text-2xl font-bold mt-2">{insights?.length || 0}</p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">Critical</p>
-                    <p className="text-2xl font-bold text-red-600 mt-2">
-                        {insights?.filter(i => i.severity === "critical").length || 0}
-                    </p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">Warning</p>
-                    <p className="text-2xl font-bold text-yellow-600 mt-2">
-                        {insights?.filter(i => i.severity === "warning").length || 0}
-                    </p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">Info</p>
-                    <p className="text-2xl font-bold text-blue-600 mt-2">
-                        {insights?.filter(i => i.severity === "info").length || 0}
-                    </p>
-                </div>
+                <StatCard title="Total" icon={Lightbulb} value={counts.total} />
+                <StatCard
+                    title="Penting"
+                    icon={AlertCircle}
+                    value={
+                        <span className="text-destructive">{counts.critical}</span>
+                    }
+                />
+                <StatCard
+                    title="Perlu perhatian"
+                    icon={AlertTriangle}
+                    value={<span className="text-warning">{counts.warning}</span>}
+                />
+                <StatCard
+                    title="Info"
+                    icon={Info}
+                    value={<span className="text-brand">{counts.info}</span>}
+                />
             </div>
 
             {/* Type Filter */}
@@ -78,9 +80,7 @@ export default function InsightsPage() {
             {/* Insights List */}
             <div>
                 {isLoading ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                        Loading insights...
-                    </div>
+                    <SkeletonList count={3} />
                 ) : isError ? (
                     <ErrorState subject="insights" onRetry={() => refetch()} />
                 ) : insights && insights.length > 0 ? (
@@ -91,7 +91,7 @@ export default function InsightsPage() {
                     </div>
                 ) : (
                     <div className="text-center py-12 border rounded-lg">
-                        <Lightbulb className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <Lightbulb className="h-12 w-12 mx-auto text-muted-foreground mb-4" aria-hidden="true" />
                         <p className="text-muted-foreground mb-2">
                             Belum ada insights untuk kategori ini
                         </p>
