@@ -102,6 +102,62 @@ describe("GET /api/transactions", () => {
         });
     });
 
+    describe("pagination", () => {
+        it("bounds the query with an explicit range", async () => {
+            const supabase = createSupabaseMock();
+            createClient.mockResolvedValue(supabase);
+
+            await GET(new Request(url()));
+
+            const range = supabase
+                .callsFor("transactions")
+                .find(([method]) => method === "range");
+
+            expect(range).toBeDefined();
+            expect(range?.slice(1)).toEqual([0, 49]);
+        });
+
+        it("offsets later pages", async () => {
+            const supabase = createSupabaseMock();
+            createClient.mockResolvedValue(supabase);
+
+            await GET(new Request(url("?page=3&per_page=10")));
+
+            const range = supabase
+                .callsFor("transactions")
+                .find(([method]) => method === "range");
+
+            expect(range?.slice(1)).toEqual([20, 29]);
+        });
+
+        it("reports has_more from the total count, not the page size", async () => {
+            createClient.mockResolvedValue(
+                createSupabaseMock({
+                    result: { data: [{ id: "t-1" }], error: null, count: 120 },
+                }),
+            );
+
+            const res = await GET(new Request(url("?page=1")));
+            const body = await res.json();
+
+            expect(body.total).toBe(120);
+            expect(body.has_more).toBe(true);
+        });
+
+        it("reports has_more false on the last page", async () => {
+            createClient.mockResolvedValue(
+                createSupabaseMock({
+                    result: { data: [{ id: "t-1" }], error: null, count: 1 },
+                }),
+            );
+
+            const res = await GET(new Request(url("?page=1")));
+            const body = await res.json();
+
+            expect(body.has_more).toBe(false);
+        });
+    });
+
     it("passes through type and category filters", async () => {
         const supabase = createSupabaseMock();
         createClient.mockResolvedValue(supabase);

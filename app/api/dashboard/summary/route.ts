@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { currentMonth, isValidMonth, monthRange } from "@/lib/utils/date";
+import {
+  currentMonth,
+  isValidMonth,
+  monthRange,
+  previousMonth,
+} from "@/lib/utils/date";
+import {
+  compareMonths,
+  summariseTotals,
+  topCategories,
+} from "@/lib/utils/summary";
+import type { Transaction } from "@/types/models";
+
+type MonthTransaction = Pick<Transaction, "type" | "amount" | "category">;
 
 // GET /api/dashboard/summary - Get monthly financial summary
 export async function GET(request: Request) {
@@ -8,18 +21,17 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const month = searchParams.get("month"); // YYYY-MM format
-    
+
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
-    
-    // If no month specified, use current month
+
     const targetMonth = month || currentMonth();
 
     if (!isValidMonth(targetMonth)) {
@@ -28,78 +40,52 @@ export async function GET(request: Request) {
         { status: 400 }
       );
     }
-    
-    const { start: monthStart, endExclusive: nextMonthStart } =
-      monthRange(targetMonth);
 
-    // Fetch transactions for the target month
-    const { data: monthTransactions, error } = await supabase
-      .from("transactions")
-      .select("*")
-      .eq("user_id", user.id)
-      .gte("date", monthStart)
-      .lt("date", nextMonthStart);
+    const current = monthRange(targetMonth);
+    const prior = monthRange(previousMonth(targetMonth));
 
-    if (error) {
-      throw error;
+    const monthQuery = (from: string, toExclusive: string) =>
+      supabase
+        .from("transactions")
+        .select("type, amount, category")
+        .eq("user_id", user.id)
+        .gte("date", from)
+        .lt("date", toExclusive);
+
+    // Both months are needed for the month-over-month comparison, which
+    // previously shipped as a hardcoded { 0, 0, 0 } and rendered as a green
+    // "no change" arrow no matter what actually happened.
+    const [currentResult, priorResult] = await Promise.all([
+      monthQuery(current.start, current.endExclusive),
+      monthQuery(prior.start, prior.endExclusive),
+    ]);
+
+    if (currentResult.error) {
+      throw currentResult.error;
     }
 
-    // Calculate totals
-    const totals = (monthTransactions || []).reduce(
-      (acc: { income: number; expenses: number }, t: any) => {
-        if (t.type === "income") {
-          acc.income += t.amount;
-        } else {
-          acc.expenses += t.amount;
-        }
-        return acc;
-      },
-      { income: 0, expenses: 0 }
-    );
-    
-    const netSavings = totals.income - totals.expenses;
-    const savingsRate = totals.income > 0 
-      ? ((netSavings / totals.income) * 100) 
-      : 0;
-    
-    // Calculate category breakdown
-    const categoryBreakdown = (monthTransactions || [])
-      .filter((t: any) => t.type === "expense")
-      .reduce((acc: Record<string, { amount: number; count: number }>, t: any) => {
-        if (!acc[t.category]) {
-          acc[t.category] = { amount: 0, count: 0 };
-        }
-        acc[t.category].amount += t.amount;
-        acc[t.category].count += 1;
-        return acc;
-      }, {} as Record<string, { amount: number; count: number }>);
-    
-    const topCategories = Object.entries(categoryBreakdown)
-      .map(([category, data]) => ({
-        category,
-        amount: data.amount,
-        count: data.count,
-        percentage: totals.expenses > 0 ? (data.amount / totals.expenses) * 100 : 0,
-      }))
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 5);
-    
-    // TODO: Calculate month-over-month changes from previous month data
-    const monthOverMonth = {
-      income_change: 0,
-      expense_change: 0,
-      savings_change: 0,
-    };
-    
+    if (priorResult.error) {
+      throw priorResult.error;
+    }
+
+    const currentTransactions = (currentResult.data ?? []) as MonthTransaction[];
+    const priorTransactions = (priorResult.data ?? []) as MonthTransaction[];
+
+    const totals = summariseTotals(currentTransactions);
+    const priorTotals = summariseTotals(priorTransactions);
+
     return NextResponse.json({
       data: {
+        month: targetMonth,
         total_income: totals.income,
         total_expenses: totals.expenses,
-        net_savings: netSavings,
-        savings_rate: savingsRate,
-        top_categories: topCategories,
-        month_over_month: monthOverMonth,
-        transaction_count: monthTransactions?.length || 0,
+        net_savings: totals.netSavings,
+        savings_rate: totals.savingsRate,
+        top_categories: topCategories(currentTransactions),
+        month_over_month: compareMonths(totals, priorTotals),
+        transaction_count: currentTransactions.length,
+        /** False for a user's first month, so the UI can omit the comparison. */
+        has_prior_month: priorTransactions.length > 0,
       },
     });
   } catch (error) {

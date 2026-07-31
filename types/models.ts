@@ -90,14 +90,18 @@ export type CategorySummary = {
 
 // Monthly summary
 export type MonthlySummary = {
+    month: string; // YYYY-MM
     total_income: number;
     total_expenses: number;
     net_savings: number;
     savings_rate: number;
     top_categories: CategorySummary[];
+    /** null where there is no meaningful baseline to compare against. */
     month_over_month: {
-        income_change: number;
-        expense_change: number;
-        savings_change: number;
+        income_change: number | null;
+        expense_change: number | null;
+        savings_change: number | null;
     };
+    transaction_count: number;
+    has_prior_month: boolean;
 };

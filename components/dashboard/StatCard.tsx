@@ -10,7 +10,9 @@ type StatCardProps = {
     description?: string;
     icon?: LucideIcon;
     trend?: {
-        value: number;
+        /** null when there is no baseline to compare against. */
+        value: number | null;
+        /** Whether the movement is good news, which is not the same as "up". */
         isPositive: boolean;
     };
     className?: string;
@@ -37,14 +39,29 @@ export function StatCard({
                         {description}
                     </p>
                 )}
-                {trend && (
-                    <p className={cn(
-                        "text-xs mt-1",
-                        trend.isPositive ? "text-green-600" : "text-red-600"
-                    )}>
-                        {trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}%
-                    </p>
-                )}
+                {trend &&
+                    (trend.value === null ? (
+                        <p className="text-xs mt-1 text-muted-foreground">
+                            Belum ada pembanding
+                        </p>
+                    ) : trend.value === 0 ? (
+                        <p className="text-xs mt-1 text-muted-foreground">
+                            Sama seperti bulan lalu
+                        </p>
+                    ) : (
+                        <p
+                            className={cn(
+                                "text-xs mt-1",
+                                trend.isPositive ? "text-success" : "text-destructive"
+                            )}
+                        >
+                            {/* Arrow reflects direction, colour reflects whether
+                                that direction is good — rising expenses point up
+                                but are not good news. */}
+                            {trend.value > 0 ? "↑" : "↓"}{" "}
+                            {Math.abs(trend.value).toFixed(1)}% dari bulan lalu
+                        </p>
+                    ))}
             </CardContent>
         </Card>
     );

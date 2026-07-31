@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+    useQuery,
+    useMutation,
+    useQueryClient,
+    useInfiniteQuery,
+} from "@tanstack/react-query";
 import { Transaction } from "@/types/models";
 import { CreateTransactionRequest, TransactionListParams } from "@/types/api";
 
@@ -12,12 +17,54 @@ export function useTransactions(params?: TransactionListParams) {
             if (params?.date_to) searchParams.set("date_to", params.date_to);
             if (params?.category) searchParams.set("category", params.category);
             if (params?.type) searchParams.set("type", params.type);
+            if (params?.page) searchParams.set("page", String(params.page));
+            if (params?.per_page) searchParams.set("per_page", String(params.per_page));
 
             const res = await fetch(`/api/transactions?${searchParams}`);
             if (!res.ok) throw new Error("Failed to fetch transactions");
             const data = await res.json();
             return data.data as Transaction[];
         },
+    });
+}
+
+type TransactionPage = {
+    data: Transaction[];
+    total: number;
+    page: number;
+    per_page: number;
+    has_more: boolean;
+};
+
+/**
+ * Paged transaction list for the Keuangan screen.
+ *
+ * The list used to fetch every row the account had ever created and render one
+ * card each, with no virtualisation.
+ */
+export function useInfiniteTransactions(params?: TransactionListParams) {
+    return useInfiniteQuery({
+        queryKey: ["transactions", "infinite", params],
+        initialPageParam: 1,
+        queryFn: async ({ pageParam }) => {
+            const searchParams = new URLSearchParams();
+            if (params?.date_from) searchParams.set("date_from", params.date_from);
+            if (params?.date_to) searchParams.set("date_to", params.date_to);
+            if (params?.category) searchParams.set("category", params.category);
+            if (params?.type) searchParams.set("type", params.type);
+            searchParams.set("page", String(pageParam));
+
+            const res = await fetch(`/api/transactions?${searchParams}`);
+
+            if (!res.ok) {
+                const body = await res.json().catch(() => null);
+                throw new Error(body?.error || "Gagal memuat transaksi");
+            }
+
+            return (await res.json()) as TransactionPage;
+        },
+        getNextPageParam: (lastPage) =>
+            lastPage.has_more ? lastPage.page + 1 : undefined,
     });
 }
 

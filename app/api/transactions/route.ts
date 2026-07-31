@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { transactionSchema } from "@/lib/utils/validators";
+import { parsePagination } from "@/lib/utils/pagination";
 
 // GET /api/transactions - List transactions with optional filters
 export async function GET(request: Request) {
@@ -24,12 +25,17 @@ export async function GET(request: Request) {
     const category = searchParams.get("category");
     const type = searchParams.get("type") as "income" | "expense" | null;
 
+    // The list was previously unbounded: a long-running account pulled every
+    // row it had ever created and rendered one card each.
+    const { page, perPage, from, to } = parsePagination(searchParams);
+
     // Build query
     let query = supabase
       .from("transactions")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("user_id", user.id)
-      .order("date", { ascending: false });
+      .order("date", { ascending: false })
+      .range(from, to);
 
     // Apply each date bound independently — requiring both silently dropped
     // the filter when only one end of the range was supplied.
@@ -49,15 +55,21 @@ export async function GET(request: Request) {
       query = query.eq("category", category);
     }
     
-    const { data: transactions, error } = await query;
-    
+    const { data: transactions, error, count } = await query;
+
     if (error) {
       throw error;
     }
-    
+
+    const rows = transactions ?? [];
+    const total = count ?? rows.length;
+
     return NextResponse.json({
-      data: transactions || [],
-      total: transactions?.length || 0,
+      data: rows,
+      total,
+      page,
+      per_page: perPage,
+      has_more: from + rows.length < total,
     });
   } catch (error) {
     console.error("Error fetching transactions:", error);

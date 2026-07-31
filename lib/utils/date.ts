@@ -38,6 +38,15 @@ export function monthRange(month: string): MonthRange {
     };
 }
 
+/** The calendar month before `month`, as YYYY-MM. */
+export function previousMonth(month: string): string {
+    if (!isValidMonth(month)) {
+        throw new RangeError(`Invalid month: ${month}. Expected YYYY-MM.`);
+    }
+
+    return format(addMonths(parseISO(`${month}-01`), -1), "yyyy-MM");
+}
+
 /** The current month as YYYY-MM, in UTC. */
 export function currentMonth(now: Date = new Date()): string {
     return now.toISOString().slice(0, 7);

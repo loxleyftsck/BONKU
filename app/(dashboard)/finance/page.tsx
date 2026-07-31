@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useTransactions } from "@/hooks/useTransactions";
+import { useInfiniteTransactions } from "@/hooks/useTransactions";
 import { TransactionCard } from "@/components/finance/TransactionCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/config/categories";
 import Link from "next/link";
 import { Plus, Filter, TrendingUp, TrendingDown, Wallet } from "lucide-react";
@@ -22,7 +21,15 @@ export default function FinancePage() {
         dateTo: "",
     });
 
-    const { data: transactions, isLoading, isError, refetch } = useTransactions(
+    const {
+        data,
+        isLoading,
+        isError,
+        refetch,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useInfiniteTransactions(
         filters.type || filters.category || filters.dateFrom || filters.dateTo
             ? {
                 type: filters.type || undefined,
@@ -33,7 +40,12 @@ export default function FinancePage() {
             : undefined
     );
 
-    // Calculate totals
+    const transactions = data?.pages.flatMap((p) => p.data);
+    const totalCount = data?.pages[0]?.total ?? 0;
+
+    // NOTE: these total only the transactions LOADED SO FAR, which is why the
+    // cards are labelled as such. A true all-time total needs a server-side
+    // aggregate; see the dashboard summary endpoint.
     const totals = transactions?.reduce(
         (acc, t) => {
             if (t.type === "income") {
@@ -69,25 +81,26 @@ export default function FinancePage() {
                 </div>
             </div>
 
-            {/* Summary Cards — these reflect the ACTIVE FILTER, not all time */}
+            {/* Summary Cards — these reflect the rows LOADED SO FAR under the
+                active filter, not the all-time totals. */}
             {totals && (
                 <div className="grid gap-4 md:grid-cols-3">
                     <StatCard
-                        title="Pemasukan (hasil filter)"
+                        title="Pemasukan (yang dimuat)"
                         icon={TrendingUp}
                         value={
                             <Amount value={totals.income} className="text-success" />
                         }
                     />
                     <StatCard
-                        title="Pengeluaran (hasil filter)"
+                        title="Pengeluaran (yang dimuat)"
                         icon={TrendingDown}
                         value={
                             <Amount value={totals.expenses} className="text-destructive" />
                         }
                     />
                     <StatCard
-                        title="Selisih (hasil filter)"
+                        title="Selisih (yang dimuat)"
                         icon={Wallet}
                         value={
                             <Amount
@@ -117,7 +130,10 @@ export default function FinancePage() {
                             className="w-full rounded-md border border-input bg-background px-3 min-h-11"
                             value={filters.type}
                             onChange={(e) =>
-                                setFilters({ ...filters, type: e.target.value as any })
+                                setFilters({
+                                    ...filters,
+                                    type: e.target.value as "" | "income" | "expense",
+                                })
                             }
                         >
                             <option value="">Semua</option>
@@ -187,7 +203,7 @@ export default function FinancePage() {
             {/* Transactions List */}
             <div>
                 <h2 className="text-xl font-bold mb-4">
-                    Semua Transaksi ({transactions?.length || 0})
+                    Semua Transaksi ({totalCount})
                 </h2>
 
                 {isLoading ? (
@@ -205,6 +221,19 @@ export default function FinancePage() {
                                 showActions
                             />
                         ))}
+
+                        {hasNextPage && (
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={() => fetchNextPage()}
+                                disabled={isFetchingNextPage}
+                            >
+                                {isFetchingNextPage
+                                    ? "Memuat..."
+                                    : `Muat lebih banyak (${transactions.length} dari ${totalCount})`}
+                            </Button>
+                        )}
                     </div>
                 ) : (
                     <div className="text-center py-12 border rounded-lg">

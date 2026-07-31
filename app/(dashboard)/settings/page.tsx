@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Settings as SettingsIcon, User, Bell, Palette, Shield } from "lucide-react";
+import { Settings as SettingsIcon, User, Palette, Shield } from "lucide-react";
 import Link from "next/link";
 import { LogoutButton } from "@/components/shared/LogoutButton";
 import { ErrorState } from "@/components/shared/ErrorState";
@@ -17,17 +17,18 @@ export default function SettingsPage() {
     const updateProfile = useUpdateProfile();
     const { theme, setTheme } = useTheme();
 
-    const [name, setName] = useState("");
+    // Null means "untouched", so the field follows the loaded profile without
+    // an effect mirroring server state into local state.
+    const [draftName, setDraftName] = useState<string | null>(null);
     const [status, setStatus] = useState("");
 
-    useEffect(() => {
-        if (profile?.name) setName(profile.name);
-    }, [profile?.name]);
+    const name = draftName ?? profile?.name ?? "";
 
     const saveName = async () => {
         setStatus("");
         try {
             await updateProfile.mutateAsync({ name });
+            setDraftName(null);
             setStatus("Nama tersimpan.");
         } catch (err) {
             setStatus(err instanceof Error ? err.message : "Gagal menyimpan.");
@@ -72,7 +73,7 @@ export default function SettingsPage() {
                                     <Input
                                         id="profile-name"
                                         value={name}
-                                        onChange={(e) => setName(e.target.value)}
+                                        onChange={(e) => setDraftName(e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-1">

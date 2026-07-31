@@ -23,7 +23,7 @@ import { ErrorState } from "@/components/shared/ErrorState";
 export default function DashboardPage() {
     // Fetch data from APIs
     const { data: summary, isLoading: summaryLoading, isError: summaryError, refetch: refetchSummary } = useDashboardSummary();
-    const { data: transactions, isLoading: transactionsLoading, isError: transactionsError, refetch: refetchTransactions } = useTransactions();
+    const { data: transactions, isLoading: transactionsLoading, isError: transactionsError, refetch: refetchTransactions } = useTransactions({ per_page: 5 });
     const { data: insights, isLoading: insightsLoading, isError: insightsError, refetch: refetchInsights } = useAIInsights(undefined, true);
     const { data: modules, isLoading: modulesLoading, isError: modulesError, refetch: refetchModules } = useEducationModules();
 
@@ -65,7 +65,9 @@ export default function DashboardPage() {
                             description="Bulan ini"
                             trend={{
                                 value: summary.month_over_month.income_change,
-                                isPositive: summary.month_over_month.income_change > 0
+                                // More income is good.
+                                isPositive:
+                                    (summary.month_over_month.income_change ?? 0) > 0,
                             }}
                         />
                         <StatCard
@@ -75,7 +77,9 @@ export default function DashboardPage() {
                             description="Bulan ini"
                             trend={{
                                 value: summary.month_over_month.expense_change,
-                                isPositive: summary.month_over_month.expense_change < 0
+                                // Less spending is good, so a fall is positive.
+                                isPositive:
+                                    (summary.month_over_month.expense_change ?? 0) < 0,
                             }}
                         />
                         <StatCard
@@ -85,7 +89,8 @@ export default function DashboardPage() {
                             description="Bulan ini"
                             trend={{
                                 value: summary.month_over_month.savings_change,
-                                isPositive: summary.month_over_month.savings_change > 0
+                                isPositive:
+                                    (summary.month_over_month.savings_change ?? 0) > 0,
                             }}
                         />
                         <StatCard

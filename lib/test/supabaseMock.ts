@@ -2,7 +2,12 @@ import { vi } from "vitest";
 
 export type RecordedCall = [method: string, ...args: unknown[]];
 
-export type QueryResult = { data: unknown; error: unknown };
+export type QueryResult = {
+    data: unknown;
+    error: unknown;
+    /** Present when the query used `{ count: "exact" }`. */
+    count?: number;
+};
 
 /**
  * A chainable stand-in for the Supabase PostgREST query builder.
@@ -33,6 +38,7 @@ export function createQueryBuilder(result: QueryResult) {
         lte: record("lte"),
         lt: record("lt"),
         order: record("order"),
+        range: record("range"),
         limit: record("limit"),
         single: record("single"),
         maybeSingle: record("maybeSingle"),
