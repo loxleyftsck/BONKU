@@ -12,24 +12,31 @@ import {
   topCategories,
 } from "@/lib/utils/summary";
 import type { Transaction } from "@/types/models";
+import { isDemoMode } from "@/lib/demo/config";
+import { listTransactions } from "@/lib/demo/store";
 
 type MonthTransaction = Pick<Transaction, "type" | "amount" | "category">;
 
 // GET /api/dashboard/summary - Get monthly financial summary
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const month = searchParams.get("month"); // YYYY-MM format
+    let userId = "";
 
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const demo = isDemoMode();
+    const supabase = demo ? null : await createClient();
 
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    if (!demo) {
+      const { data: { user }, error: authError } = await supabase!.auth.getUser();
+
+      if (authError || !user) {
+        return NextResponse.json(
+          { error: "Unauthorized" },
+          { status: 401 }
+        );
+      }
+      userId = user.id;
     }
 
     const targetMonth = month || currentMonth();
@@ -45,31 +52,36 @@ export async function GET(request: Request) {
     const prior = monthRange(previousMonth(targetMonth));
 
     const monthQuery = (from: string, toExclusive: string) =>
-      supabase
+      supabase!
         .from("transactions")
         .select("type, amount, category")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .gte("date", from)
         .lt("date", toExclusive);
 
     // Both months are needed for the month-over-month comparison, which
     // previously shipped as a hardcoded { 0, 0, 0 } and rendered as a green
     // "no change" arrow no matter what actually happened.
-    const [currentResult, priorResult] = await Promise.all([
-      monthQuery(current.start, current.endExclusive),
-      monthQuery(prior.start, prior.endExclusive),
-    ]);
+    let currentTransactions: MonthTransaction[];
+    let priorTransactions: MonthTransaction[];
 
-    if (currentResult.error) {
-      throw currentResult.error;
+    if (demo) {
+      const inRange = (from: string, toExclusive: string) =>
+        listTransactions({}).filter((t) => t.date >= from && t.date < toExclusive);
+      currentTransactions = inRange(current.start, current.endExclusive);
+      priorTransactions = inRange(prior.start, prior.endExclusive);
+    } else {
+      const [currentResult, priorResult] = await Promise.all([
+        monthQuery(current.start, current.endExclusive),
+        monthQuery(prior.start, prior.endExclusive),
+      ]);
+
+      if (currentResult.error) throw currentResult.error;
+      if (priorResult.error) throw priorResult.error;
+
+      currentTransactions = (currentResult.data ?? []) as MonthTransaction[];
+      priorTransactions = (priorResult.data ?? []) as MonthTransaction[];
     }
-
-    if (priorResult.error) {
-      throw priorResult.error;
-    }
-
-    const currentTransactions = (currentResult.data ?? []) as MonthTransaction[];
-    const priorTransactions = (priorResult.data ?? []) as MonthTransaction[];
 
     const totals = summariseTotals(currentTransactions);
     const priorTotals = summariseTotals(priorTransactions);

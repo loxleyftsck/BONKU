@@ -8,6 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/shared/Logo";
+import { FlaskConical } from "lucide-react";
+
+// Read at module scope: NEXT_PUBLIC_* is inlined at build time, and the
+// non-production guard lives in lib/demo/config.
+const DEMO_ENABLED =
+  process.env.NEXT_PUBLIC_DEMO_MODE === "true" &&
+  process.env.NODE_ENV !== "production";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -97,6 +104,37 @@ export default function LoginPage() {
             >
               {loading ? "Memproses..." : "Masuk"}
             </Button>
+
+            {DEMO_ENABLED && (
+              <>
+                <div className="relative py-1">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-card px-2 text-xs text-muted-foreground">
+                      atau
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    router.push("/dashboard");
+                    router.refresh();
+                  }}
+                >
+                  <FlaskConical className="h-4 w-4 mr-2" aria-hidden="true" />
+                  Masuk sebagai tamu
+                </Button>
+                <p className="text-center text-xs text-muted-foreground">
+                  Data contoh, bukan keuangan sungguhan.
+                </p>
+              </>
+            )}
 
             <div className="text-center text-sm text-muted-foreground">
               Belum punya akun?{" "}

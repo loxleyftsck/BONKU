@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { transactionSchema } from "@/lib/utils/validators";
+import { isDemoMode } from "@/lib/demo/config";
+import {
+  deleteTransaction,
+  findTransaction,
+  updateTransaction,
+} from "@/lib/demo/store";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -17,6 +23,13 @@ export async function GET(_request: Request, { params }: RouteContext) {
         { error: "Invalid transaction id" },
         { status: 400 }
       );
+    }
+
+    if (isDemoMode()) {
+      const found = findTransaction(id);
+      return found
+        ? NextResponse.json({ data: found })
+        : NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     }
 
     const supabase = await createClient();
@@ -67,7 +80,6 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       );
     }
 
-    const supabase = await createClient();
     const body = await request.json();
 
     // Full-object validation: the edit form always submits every field, and
@@ -83,6 +95,15 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         { status: 400 }
       );
     }
+
+    if (isDemoMode()) {
+      const updated = updateTransaction(id, validationResult.data);
+      return updated
+        ? NextResponse.json({ data: updated })
+        : NextResponse.json({ error: "Transaction not found" }, { status: 404 });
+    }
+
+    const supabase = await createClient();
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -131,6 +152,13 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
         { error: "Invalid transaction id" },
         { status: 400 }
       );
+    }
+
+    if (isDemoMode()) {
+      const removed = deleteTransaction(id);
+      return removed
+        ? NextResponse.json({ data: removed })
+        : NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     }
 
     const supabase = await createClient();

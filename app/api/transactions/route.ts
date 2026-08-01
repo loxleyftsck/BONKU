@@ -2,12 +2,34 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { transactionSchema } from "@/lib/utils/validators";
 import { parsePagination } from "@/lib/utils/pagination";
+import { isDemoMode } from "@/lib/demo/config";
+import { createTransaction, listTransactions } from "@/lib/demo/store";
 
 // GET /api/transactions - List transactions with optional filters
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient();
     const { searchParams } = new URL(request.url);
+
+    if (isDemoMode()) {
+      const { page, perPage, from, to } = parsePagination(searchParams);
+      const all = listTransactions({
+        type: searchParams.get("type"),
+        category: searchParams.get("category"),
+        dateFrom: searchParams.get("date_from"),
+        dateTo: searchParams.get("date_to"),
+      });
+      const rows = all.slice(from, to + 1);
+
+      return NextResponse.json({
+        data: rows,
+        total: all.length,
+        page,
+        per_page: perPage,
+        has_more: from + rows.length < all.length,
+      });
+    }
+
+    const supabase = await createClient();
 
     // Authenticate. RLS also scopes these rows, but the API must not depend on
     // a single database policy to keep one user's finances from another's.
@@ -83,9 +105,8 @@ export async function GET(request: Request) {
 // POST /api/transactions - Create new transaction
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
     const body = await request.json();
-    
+
     // ✅ FIX: Validate input with Zod BEFORE processing
     const validationResult = transactionSchema.safeParse(body);
     
@@ -100,6 +121,21 @@ export async function POST(request: Request) {
     }
     
     const validatedData = validationResult.data;
+
+    if (isDemoMode()) {
+      return NextResponse.json(
+        {
+          data: createTransaction({
+            ...validatedData,
+            description: validatedData.description ?? null,
+            behavior_tag: validatedData.behavior_tag ?? null,
+          }),
+        },
+        { status: 201 },
+      );
+    }
+
+    const supabase = await createClient();
     
     // Get current user (requires authentication)
     const { data: { user }, error: authError } = await supabase.auth.getUser();

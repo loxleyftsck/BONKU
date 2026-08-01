@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { isDemoMode } from "@/lib/demo/config";
+import { demoState } from "@/lib/demo/store";
 
 // GET /api/profile - The signed-in user's profile
 export async function GET() {
   try {
+    if (isDemoMode()) {
+      return NextResponse.json({ data: demoState().profile });
+    }
+
     const supabase = await createClient();
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -65,6 +71,15 @@ export async function PATCH(request: Request) {
         { error: "Validation failed", details: parsed.error.errors },
         { status: 400 }
       );
+    }
+
+    if (isDemoMode()) {
+      const state = demoState();
+      if (parsed.data.name !== undefined) state.profile.name = parsed.data.name;
+      if (parsed.data.settings) {
+        state.profile.settings = { ...state.profile.settings, ...parsed.data.settings };
+      }
+      return NextResponse.json({ data: state.profile });
     }
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();

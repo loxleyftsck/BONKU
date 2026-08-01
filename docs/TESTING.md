@@ -115,3 +115,20 @@ Deliberately not a single global number, which rewards testing trivia.
   reader knows why the assertion is oddly specific.
 - Query by role and accessible name, not by test id — that way the test
   fails when the UI becomes unusable to a screen reader.
+
+## Demo (guest) mode
+
+`NEXT_PUBLIC_DEMO_MODE=true` runs the whole app against seeded in-memory data
+with no Supabase project and no account. It exists so the UI can be exercised
+end to end without infrastructure.
+
+It **bypasses authentication**, and is therefore hard-gated to non-production
+builds in `lib/demo/config.ts`. `lib/demo/config.test.ts` pins that gate,
+including that the flag must be the exact string `"true"` and that production
+ignores it entirely. Verified against a real production build: with the flag
+set, `/dashboard` still redirects to `/login`, the APIs still return 401, and
+the guest button is absent from the served HTML.
+
+If a public demo is ever wanted, do not relax the gate — deploy a separate
+instance using Supabase anonymous auth, so demo users are real rows subject to
+RLS rather than an auth bypass.

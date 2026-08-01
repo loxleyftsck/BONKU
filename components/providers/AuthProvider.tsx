@@ -4,12 +4,17 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
+import { isDemoMode } from "@/lib/demo/config";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
   useEffect(() => {
+    // Demo mode runs with no Supabase project at all, so there is no session
+    // to subscribe to and createClient() would throw on the missing env vars.
+    if (isDemoMode()) return;
+
     // Constructed inside the effect: createClient() throws when the Supabase
     // env vars are absent, and calling it during render breaks prerendering
     // at build time.

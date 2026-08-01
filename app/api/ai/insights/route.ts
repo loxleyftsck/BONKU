@@ -1,13 +1,23 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isDemoMode } from "@/lib/demo/config";
+import { demoState } from "@/lib/demo/store";
 
 // GET /api/ai/insights - Get AI insights for user
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient();
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
     const activeOnly = searchParams.get("active_only") === "true";
+
+    if (isDemoMode()) {
+      const rows = demoState().insights.filter(
+        (i) => (!type || i.type === type) && (!activeOnly || !i.dismissed),
+      );
+      return NextResponse.json({ data: rows, total: rows.length });
+    }
+
+    const supabase = await createClient();
     
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { isDemoMode } from "@/lib/demo/config";
 
 export function LogoutButton() {
     const router = useRouter();
@@ -17,10 +18,13 @@ export function LogoutButton() {
         setError("");
 
         try {
-            const res = await fetch("/api/auth/logout", { method: "POST" });
+            // Demo mode has no session to sign out of.
+            if (!isDemoMode()) {
+                const res = await fetch("/api/auth/logout", { method: "POST" });
 
-            if (!res.ok) {
-                throw new Error("Gagal keluar. Coba lagi.");
+                if (!res.ok) {
+                    throw new Error("Gagal keluar. Coba lagi.");
+                }
             }
 
             // Drop every cached response so the next account cannot read the

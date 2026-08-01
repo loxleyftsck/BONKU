@@ -1,7 +1,14 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isDemoMode } from '@/lib/demo/config'
 
 export async function middleware(request: NextRequest) {
+  // Demo mode has no session to check. Gated to non-production in
+  // lib/demo/config, so this cannot become a production auth bypass.
+  if (isDemoMode()) {
+    return NextResponse.next()
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
