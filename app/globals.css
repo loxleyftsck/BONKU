@@ -10,6 +10,9 @@
      at --font-geist-sans, which is never defined, so every surface silently
      rendered in the system fallback. */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-chart-grid: var(--chart-grid);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-brand-accent: var(--brand-accent);
@@ -69,6 +72,15 @@
   --brand-foreground: oklch(0.985 0 0);
   --brand-accent: oklch(0.55 0.19 300);
 
+  /* Chart series. Validated with the dataviz palette checker against a white
+     surface: lightness band, chroma floor, CVD separation (worst adjacent pair
+     ΔE 26.6 protan, target >= 8) and 3:1 contrast all pass.
+     Deliberately NOT the success/destructive tokens: income vs expense is
+     identity, not status, and green-vs-red is the classic red-green CVD trap. */
+  --series-1: #3461c9;
+  --series-2: #eb6834;
+  --chart-grid: oklch(0.922 0 0);
+
   /* Semantic money colours, so income/expense stop being raw text-green-600 /
      text-red-600 scattered across components. */
   --success: oklch(0.52 0.14 150);
@@ -108,6 +120,13 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
+
+  /* Re-selected for the dark surface and re-validated, not flipped. BONKU's
+     dark --brand (L 0.681) fails the 0.48-0.67 lightness band, so the series
+     blue is its own step. */
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --chart-grid: oklch(1 0 0 / 12%);
 
   /* Lifted for legibility on dark surfaces. */
   --brand: oklch(0.68 0.15 264);

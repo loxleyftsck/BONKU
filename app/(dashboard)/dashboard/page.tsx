@@ -19,7 +19,11 @@ import { useEducationModules } from "@/hooks/useEducation";
 import { Amount } from "@/components/shared/Amount";
 import { HideBalancesToggle } from "@/components/shared/HideBalancesToggle";
 import { ErrorState } from "@/components/shared/ErrorState";
-import { SkeletonList, SkeletonStats } from "@/components/ui/skeleton";
+import { SkeletonList, SkeletonStats, Skeleton } from "@/components/ui/skeleton";
+import { TrendChart } from "@/components/charts/TrendChart";
+import { CategoryBars } from "@/components/charts/CategoryBars";
+import { useTrend } from "@/hooks/useTrend";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
     // Fetch data from APIs
@@ -27,6 +31,7 @@ export default function DashboardPage() {
     const { data: transactions, isLoading: transactionsLoading, isError: transactionsError, refetch: refetchTransactions } = useTransactions({ per_page: 5 });
     const { data: insights, isLoading: insightsLoading, isError: insightsError, refetch: refetchInsights } = useAIInsights(undefined, true);
     const { data: modules, isLoading: modulesLoading, isError: modulesError, refetch: refetchModules } = useEducationModules();
+    const { data: trend, isLoading: trendLoading, isError: trendError, refetch: refetchTrend } = useTrend(12);
 
     // Get first 5 transactions
     const recentTransactions = transactions?.slice(0, 5) || [];
@@ -100,6 +105,41 @@ export default function DashboardPage() {
                         />
                     </>
                 ) : null}
+            </div>
+
+            {/* Charts */}
+            <div className="grid gap-6 lg:grid-cols-3">
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Pemasukan vs Pengeluaran</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {trendLoading ? (
+                            <Skeleton className="h-64 w-full" />
+                        ) : trendError ? (
+                            <ErrorState subject="grafik" onRetry={() => refetchTrend()} />
+                        ) : trend && trend.length > 0 ? (
+                            <TrendChart data={trend} />
+                        ) : null}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Pengeluaran per Kategori</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {summaryLoading ? (
+                            <Skeleton className="h-64 w-full" />
+                        ) : summary && summary.top_categories.length > 0 ? (
+                            <CategoryBars categories={summary.top_categories} />
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                Belum ada pengeluaran bulan ini.
+                            </p>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
 
             {/* AI Insights */}
