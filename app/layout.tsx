@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -10,6 +10,17 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // Room for the iPhone notch and the Android gesture bar.
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+};
+
 export const metadata: Metadata = {
   title: {
     default: siteConfig.name,
@@ -19,6 +30,11 @@ export const metadata: Metadata = {
   keywords: [...siteConfig.keywords],
   creator: siteConfig.creator,
   metadataBase: new URL(siteConfig.url),
+  appleWebApp: {
+    capable: true,
+    title: "BONKU",
+    statusBarStyle: "default",
+  },
 };
 
 export default function RootLayout({

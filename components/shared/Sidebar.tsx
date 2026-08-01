@@ -8,14 +8,11 @@ import {
     BookOpen,
     Lightbulb,
     Settings,
-    Menu,
-    X
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
 import { useProfile } from "@/hooks/useProfile";
-import { useEffect, useState } from "react";
+
 
 const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -27,62 +24,17 @@ const navigation = [
 
 export function Sidebar() {
     const pathname = usePathname();
-    const [isOpen, setIsOpen] = useState(false);
     const { data: profile } = useProfile();
-
-    // Close the mobile drawer on Escape, and stop the page scrolling behind it.
-    useEffect(() => {
-        if (!isOpen) return;
-
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "Escape") setIsOpen(false);
-        };
-
-        document.addEventListener("keydown", onKeyDown);
-        document.body.style.overflow = "hidden";
-
-        return () => {
-            document.removeEventListener("keydown", onKeyDown);
-            document.body.style.overflow = "";
-        };
-    }, [isOpen]);
 
     const displayName = profile?.name || profile?.email?.split("@")[0] || "—";
     const initial = displayName.charAt(0).toUpperCase();
 
     return (
         <>
-            {/* Mobile menu button */}
-            <div className="lg:hidden fixed top-4 left-4 z-50">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    aria-label={isOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
-                    aria-expanded={isOpen}
-                    aria-controls="main-navigation"
-                    onClick={() => setIsOpen(!isOpen)}
-                >
-                    {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                </Button>
-            </div>
-
-            {/* Sidebar overlay for mobile — a button so it is keyboard reachable */}
-            {isOpen && (
-                <button
-                    type="button"
-                    aria-label="Tutup menu navigasi"
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-                    onClick={() => setIsOpen(false)}
-                />
-            )}
-
-            {/* Sidebar */}
+            {/* Sidebar — desktop only; phones use BottomNav */}
             <aside
                 id="main-navigation"
-                className={cn(
-                    "fixed top-0 left-0 z-40 h-screen w-64 bg-card border-r transition-transform lg:translate-x-0",
-                    isOpen ? "translate-x-0" : "-translate-x-full"
-                )}
+                className="hidden lg:block fixed top-0 left-0 z-40 h-screen w-64 bg-card border-r"
             >
                 <div className="flex flex-col h-full">
                     {/* Logo */}
@@ -103,7 +55,6 @@ export function Sidebar() {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    onClick={() => setIsOpen(false)}
                                     aria-current={isActive ? "page" : undefined}
                                     className={cn(
                                         // min-h-11 ≈ 44px, the minimum comfortable touch target.

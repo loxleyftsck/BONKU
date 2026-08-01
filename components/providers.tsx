@@ -5,6 +5,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { ServiceWorkerProvider } from "@/components/providers/ServiceWorkerProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
     const [queryClient] = useState(
@@ -23,6 +24,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
             <ThemeProvider>
                 <AuthProvider>{children}</AuthProvider>
+                <ServiceWorkerProvider />
             </ThemeProvider>
             {process.env.NODE_ENV === "development" && (
                 <ReactQueryDevtools initialIsOpen={false} />
