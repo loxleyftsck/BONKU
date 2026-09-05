@@ -62,6 +62,10 @@ export default function FinancePage() {
 
     const allCategories = [...INCOME_CATEGORIES, ...EXPENSE_CATEGORIES];
 
+    const hasActiveFilter = Boolean(
+        filters.type || filters.category || filters.dateFrom || filters.dateTo
+    );
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -233,17 +237,39 @@ export default function FinancePage() {
                             </Button>
                         )}
                     </div>
-                ) : (
+                ) : hasActiveFilter ? (
+                    /* A filter matched nothing — different from having nothing. */
                     <div className="text-center py-12 border rounded-lg">
                         <p className="text-muted-foreground mb-4">
-                            Belum ada transaksi yang sesuai dengan filter
+                            Tidak ada transaksi yang cocok dengan filter ini
                         </p>
-                        <Link href="/finance/add">
-                            <Button>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Tambah Transaksi Pertama
-                            </Button>
-                        </Link>
+                        <Button
+                            variant="outline"
+                            onClick={() =>
+                                setFilters({ type: "", category: "", dateFrom: "", dateTo: "" })
+                            }
+                        >
+                            Reset Filter
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="text-center py-12 border rounded-lg px-6">
+                        <p className="font-medium">Belum ada transaksi</p>
+                        <p className="text-sm text-muted-foreground mt-1 mb-4 max-w-sm mx-auto">
+                            Catat satu pengeluaran hari ini — sekecil apa pun. Ringkasan
+                            dan grafik mulai berguna setelah ada beberapa catatan.
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-3">
+                            <Link href="/finance/add">
+                                <Button>
+                                    <Plus className="h-4 w-4 mr-2" aria-hidden="true" />
+                                    Catat transaksi pertama
+                                </Button>
+                            </Link>
+                            <Link href="/panduan">
+                                <Button variant="outline">Baca panduan</Button>
+                            </Link>
+                        </div>
                     </div>
                 )}
             </div>

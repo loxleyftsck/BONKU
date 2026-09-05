@@ -186,7 +186,7 @@ export function TransactionForm({
                     {/* Behavior Tag (only for expenses) */}
                     {transactionType === "expense" && (
                         <div className="space-y-2">
-                            <Label htmlFor="behavior_tag">Behavior Tag (opsional)</Label>
+                            <Label htmlFor="behavior_tag">Jenis pengeluaran (opsional)</Label>
                             <NativeSelect
                                 id="behavior_tag"
                                 {...register("behavior_tag")}
@@ -197,7 +197,8 @@ export function TransactionForm({
                                 <option value="essential">Penting</option>
                             </NativeSelect>
                             <p className="text-xs text-muted-foreground">
-                                Tag untuk analisis behavioral finance
+                                Tandai kalau pembelian ini tidak kamu rencanakan.
+                                Nanti kamu bisa lihat berapa uang yang habis ke situ.
                             </p>
                         </div>
                     )}

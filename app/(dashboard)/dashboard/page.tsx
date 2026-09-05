@@ -23,6 +23,7 @@ import { SkeletonList, SkeletonStats, Skeleton } from "@/components/ui/skeleton"
 import { TrendChart } from "@/components/charts/TrendChart";
 import { CategoryBars } from "@/components/charts/CategoryBars";
 import { useTrend } from "@/hooks/useTrend";
+import { FirstRun } from "@/components/onboarding/FirstRun";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
@@ -32,6 +33,17 @@ export default function DashboardPage() {
     const { data: insights, isLoading: insightsLoading, isError: insightsError, refetch: refetchInsights } = useAIInsights(undefined, true);
     const { data: modules, isLoading: modulesLoading, isError: modulesError, refetch: refetchModules } = useEducationModules();
     const { data: trend, isLoading: trendLoading, isError: trendError, refetch: refetchTrend } = useTrend(12);
+
+    /*
+     * A brand-new account, derived rather than stored: twelve months with
+     * nothing recorded IS a new account, and the state clears itself the
+     * moment a transaction exists. No flag to fall out of sync, no redirect.
+     */
+    const isFirstRun =
+        !trendLoading &&
+        !trendError &&
+        trend !== undefined &&
+        trend.every((p) => p.income === 0 && p.expenses === 0);
 
     // Get first 5 transactions
     const recentTransactions = transactions?.slice(0, 5) || [];
@@ -46,12 +58,19 @@ export default function DashboardPage() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
                     <p className="text-muted-foreground mt-1">
-                        Selamat datang kembali! Ini ringkasan keuanganmu bulan ini.
+                        {isFirstRun
+                            ? "Selamat datang di BONKU."
+                            : "Ini ringkasan keuanganmu bulan ini."}
                     </p>
                 </div>
-                <HideBalancesToggle />
+                {/* Nothing to hide until something is recorded. */}
+                {!isFirstRun && <HideBalancesToggle />}
             </div>
 
+            {isFirstRun ? (
+                <FirstRun />
+            ) : (
+            <>
             {/* Stats Grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {summaryLoading ? (
@@ -217,6 +236,8 @@ export default function DashboardPage() {
                     )}
                 </div>
             </div>
+            </>
+            )}
         </div>
     );
 }

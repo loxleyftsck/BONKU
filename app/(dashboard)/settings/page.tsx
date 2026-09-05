@@ -198,6 +198,11 @@ export default function SettingsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
+                                <Link href="/panduan" className="block">
+                                    <Button variant="outline" className="w-full justify-start">
+                                        Panduan Singkat
+                                    </Button>
+                                </Link>
                                 <Link href="/legal/privacy" className="block">
                                     <Button variant="outline" className="w-full justify-start">
                                         Kebijakan Privasi
