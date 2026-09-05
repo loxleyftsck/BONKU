@@ -26,19 +26,19 @@ export default function InsightsPage() {
 
     const types = [
         { value: "", label: "Semua" },
-        { value: "spending_alert", label: "Spending Alert" },
-        { value: "saving_opportunity", label: "Peluang Saving" },
-        { value: "behavior_pattern", label: "Behavior Pattern" },
-        { value: "inflation_impact", label: "Inflasi Impact" },
+        { value: "spending_alert", label: "Peringatan belanja" },
+        { value: "saving_opportunity", label: "Peluang hemat" },
+        { value: "behavior_pattern", label: "Pola kebiasaan" },
+        { value: "inflation_impact", label: "Dampak inflasi" },
     ];
 
     return (
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">AI Insights</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Insights</h1>
                 <p className="text-muted-foreground mt-1">
-                    Analisis dan rekomendasi personal untuk keuanganmu
+                    Dihitung dari transaksimu sendiri, bukan tebakan
                 </p>
             </div>
 
@@ -93,10 +93,11 @@ export default function InsightsPage() {
                     <div className="text-center py-12 border rounded-lg">
                         <Lightbulb className="h-12 w-12 mx-auto text-muted-foreground mb-4" aria-hidden="true" />
                         <p className="text-muted-foreground mb-2">
-                            Belum ada insights untuk kategori ini
+                            Belum ada yang bisa disimpulkan
                         </p>
                         <p className="text-sm text-muted-foreground">
-                            Terus catat transaksimu untuk mendapat insights personal!
+                            Insights muncul setelah ada cukup transaksi untuk
+                            dibandingkan — biasanya sekitar satu bulan.
                         </p>
                     </div>
                 )}

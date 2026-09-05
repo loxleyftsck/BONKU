@@ -1,5 +1,5 @@
 import { DEMO_USER } from "./config";
-import type { AIInsight, EducationModule, Transaction } from "@/types/models";
+import type { EducationModule, Transaction } from "@/types/models";
 
 /**
  * In-memory demo dataset.
@@ -70,55 +70,24 @@ function tx(
 function seedTransactions(): Transaction[] {
     return [
         // ---- current month
+        // Shaped like the audience the product is for: a young earner with a
+        // thin margin, one category running away, and real impulse spending —
+        // not someone banking half their salary.
         tx({ type: "income", amount: 6_500_000, category: "salary", description: "Gaji bulanan", date: thisMonth(25), is_recurring: true, behavior_tag: null }),
-        tx({ type: "income", amount: 750_000, category: "freelance", description: "Proyek desain", date: thisMonth(18), is_recurring: false, behavior_tag: null }),
         tx({ type: "expense", amount: 1_800_000, category: "housing", description: "Sewa kos", date: thisMonth(2), is_recurring: true, behavior_tag: "essential" }),
-        tx({ type: "expense", amount: 950_000, category: "food", description: "Belanja bulanan", date: thisMonth(6), is_recurring: false, behavior_tag: "planned" }),
-        tx({ type: "expense", amount: 320_000, category: "transportation", description: "Bensin dan ojek online", date: thisMonth(9), is_recurring: false, behavior_tag: "essential" }),
-        tx({ type: "expense", amount: 185_000, category: "entertainment", description: "Nonton dan kopi", date: thisMonth(12), is_recurring: false, behavior_tag: "impulsive" }),
-        tx({ type: "expense", amount: 240_000, category: "food", description: "Makan di luar", date: thisMonth(16), is_recurring: false, behavior_tag: "impulsive" }),
+        tx({ type: "expense", amount: 1_450_000, category: "food", description: "Belanja bulanan", date: thisMonth(6), is_recurring: false, behavior_tag: "planned" }),
+        tx({ type: "expense", amount: 380_000, category: "transportation", description: "Bensin dan ojek online", date: thisMonth(9), is_recurring: false, behavior_tag: "essential" }),
+        tx({ type: "expense", amount: 450_000, category: "entertainment", description: "Nonton dan nongkrong", date: thisMonth(12), is_recurring: false, behavior_tag: "impulsive" }),
+        tx({ type: "expense", amount: 300_000, category: "food", description: "Makan di luar", date: thisMonth(16), is_recurring: false, behavior_tag: "impulsive" }),
+        tx({ type: "expense", amount: 620_000, category: "shopping", description: "Sepatu diskon", date: thisMonth(18), is_recurring: false, behavior_tag: "impulsive" }),
         tx({ type: "expense", amount: 99_000, category: "bills", description: "Langganan internet", date: thisMonth(20), is_recurring: true, behavior_tag: "essential" }),
 
         // ---- previous month, so trends have a baseline
         tx({ type: "income", amount: 6_500_000, category: "salary", description: "Gaji bulanan", date: lastMonth(25), is_recurring: true, behavior_tag: null }),
         tx({ type: "expense", amount: 1_800_000, category: "housing", description: "Sewa kos", date: lastMonth(2), is_recurring: true, behavior_tag: "essential" }),
-        tx({ type: "expense", amount: 1_150_000, category: "food", description: "Belanja bulanan", date: lastMonth(6), is_recurring: false, behavior_tag: "planned" }),
-        tx({ type: "expense", amount: 410_000, category: "transportation", description: "Transportasi", date: lastMonth(11), is_recurring: false, behavior_tag: "essential" }),
-        tx({ type: "expense", amount: 520_000, category: "shopping", description: "Baju baru", date: lastMonth(15), is_recurring: false, behavior_tag: "impulsive" }),
-    ];
-}
-
-function seedInsights(): AIInsight[] {
-    const now = new Date().toISOString();
-    return [
-        {
-            id: uuid(),
-            user_id: DEMO_USER.id,
-            type: "behavior_pattern",
-            title: "Belanja impulsif naik bulan ini",
-            message:
-                "Rp 425.000 dari pengeluaranmu bulan ini ditandai impulsif — sekitar 12% dari total. Bulan lalu angkanya Rp 520.000.",
-            severity: "warning",
-            actionable: true,
-            actions: ["Lihat transaksi impulsif"],
-            dismissed: false,
-            created_at: now,
-            expires_at: null,
-        },
-        {
-            id: uuid(),
-            user_id: DEMO_USER.id,
-            type: "saving_opportunity",
-            title: "Rasio menabungmu di atas target",
-            message:
-                "Kamu menyisihkan sekitar 47% dari pemasukan bulan ini, di atas target 30%. Pertahankan.",
-            severity: "info",
-            actionable: false,
-            actions: null,
-            dismissed: false,
-            created_at: now,
-            expires_at: null,
-        },
+        tx({ type: "expense", amount: 1_000_000, category: "food", description: "Belanja bulanan", date: lastMonth(6), is_recurring: false, behavior_tag: "planned" }),
+        tx({ type: "expense", amount: 350_000, category: "transportation", description: "Transportasi", date: lastMonth(11), is_recurring: false, behavior_tag: "essential" }),
+        tx({ type: "expense", amount: 400_000, category: "entertainment", description: "Hiburan", date: lastMonth(15), is_recurring: false, behavior_tag: "impulsive" }),
     ];
 }
 
@@ -157,7 +126,6 @@ function seedModules(): EducationModule[] {
 
 type DemoState = {
     transactions: Transaction[];
-    insights: AIInsight[];
     modules: EducationModule[];
     profile: { id: string; email: string; name: string; settings: Record<string, unknown> };
 };
@@ -165,7 +133,6 @@ type DemoState = {
 function freshState(): DemoState {
     return {
         transactions: seedTransactions(),
-        insights: seedInsights(),
         modules: seedModules(),
         profile: {
             id: DEMO_USER.id,
