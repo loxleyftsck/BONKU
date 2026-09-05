@@ -10,7 +10,8 @@ export type ProfileSettings = {
 
 export type Profile = {
     id: string;
-    email: string;
+    /** Null for guest accounts created by anonymous sign-in (migration 004). */
+    email: string | null;
     name: string | null;
     settings: ProfileSettings | null;
 };
